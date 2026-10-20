@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tablebook</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #222222;
+      --muted: #555555;
+      --card: #f4f4f4;
+      --accent: #2a7a5f;
+    }
+
+    html.dark {
+      --bg: #1b1b1b;
+      --text: #eeeeee;
+      --muted: #bbbbbb;
+      --card: #2a2a2a;
+      --accent: #5cc49d;
+    }
+
+    html {
+      background: var(--bg);
+      color: var(--text);
+      color-scheme: light;
+    }
+
+    html.dark {
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card);
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    #theme-btn {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      padding: 8px 14px;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    #theme-btn:hover {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 48px 0 32px;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      margin: 0 0 12px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    section {
+      margin-top: 32px;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    ul, ol {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 16px 16px 16px 40px;
+      margin: 0;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">Tablebook</div>
+      <button id="theme-btn">Փոխել թեման</button>
+    </header>
+
+    <div class="hero">
+      <h1>Սեղանի ամրագրում փոքր սրճարանների համար</h1>
+      <p>Պարզ և արագ ամրագրումներ՝ առանց զանգերի և թղթերի։</p>
+    </div>
+
+    <section>
+      <h2>Ում համար է</h2>
+      <ul>
+        <li>Սրճարանների և փոքր ռեստորանների տերերի համար</li>
+        <li>Հյուրերի, ովքեր ուզում են արագ սեղան ամրագրել</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Ինչպես է աշխատում</h2>
+      <ol>
+        <li>Հյուրը ընտրում է օրը, ժամը, հյուրերի քանակը</li>
+        <li>Սրճարանը տեսնում է նոր ամրագրումը և հաստատում է այն</li>
+        <li>Հյուրը ստանում է հաստատման հաղորդագրություն</li>
+      </ol>
+    </section>
+  </div>
+
+  <script>
+    // Կոճակը սեղմելիս փոխում ենք թեման՝ մուգի և բացի միջև
+    const themeBtn = document.getElementById("theme-btn");
+    const root = document.documentElement;
+
+    // Երկու թեմաների գույները
+    const themes = {
+      light: { "--bg": "#ffffff", "--text": "#222222", "--muted": "#555555", "--card": "#f4f4f4", "--accent": "#2a7a5f" },
+      dark:  { "--bg": "#1b1b1b", "--text": "#eeeeee", "--muted": "#bbbbbb", "--card": "#2a2a2a", "--accent": "#5cc49d" }
+    };
+
+    // Կիրառում ենք թեման ամբողջ էջի վրա և թարմացնում կոճակի տեքստը
+    function applyTheme(name) {
+      const colors = themes[name];
+      for (const key in colors) {
+        root.style.setProperty(key, colors[key]);
+      }
+      root.classList.toggle("dark", name === "dark");
+      document.body.style.backgroundColor = colors["--bg"];
+      document.body.style.color = colors["--text"];
+      themeBtn.textContent = name === "dark" ? "☀️ Բաց թեմա" : "🌙 Մուգ թեմա";
+    }
+
+    // Վերականգնում ենք նախկինում ընտրված թեման
+    let current = "light";
+    try {
+      if (localStorage.getItem("theme") === "dark") current = "dark";
+    } catch (e) {}
+    applyTheme(current);
+
+    themeBtn.addEventListener("click", function () {
+      current = current === "dark" ? "light" : "dark";
+      applyTheme(current);
+      // Պահպանում ենք ընտրությունը
+      try {
+        localStorage.setItem("theme", current);
+      } catch (e) {}
+    });
+  </script>
+</body>
+</html>
