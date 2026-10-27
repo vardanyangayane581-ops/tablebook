@@ -1,0 +1,520 @@
+/* Tablebook-ի ընդհանուր ոճերը՝ բոլոր էջերի համար */
+
+:root {
+  --bg: #f5f2ec;
+  --surface: #ffffff;
+  --ink: #1f2a26;
+  --muted: #5e6b66;
+  --line: #e3ded5;
+  --accent: #2a7a5f;
+  --accent-soft: #dcefe6;
+  --warm: #e9a23b;
+  --warm-soft: #fbebd0;
+  --wood: #b9784a;
+  --wood-dark: #8a5532;
+  --error: #b42318;
+  --shadow: 0 10px 30px rgba(31, 42, 38, 0.08);
+  color-scheme: light;
+}
+
+html.dark {
+  --bg: #151b19;
+  --surface: #1e2623;
+  --ink: #ecefea;
+  --muted: #a9b5af;
+  --line: #2e3834;
+  --accent: #5cc49d;
+  --accent-soft: #1f3a30;
+  --warm: #f0b356;
+  --warm-soft: #3a2f1e;
+  --wood: #9a6440;
+  --wood-dark: #6e4328;
+  --error: #ff8a80;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  font-family: "Noto Sans Armenian", "Segoe UI", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  background: var(--bg);
+  color: var(--ink);
+  transition: background 0.3s, color 0.3s;
+}
+
+h1, h2, h3 {
+  font-family: "Noto Serif Armenian", Georgia, "Times New Roman", serif;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Գլխամաս */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.logo {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Noto Serif Armenian", Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.logo svg { width: 34px; height: 34px; }
+
+/* «Փոխել թեման» կոճակը */
+#theme-btn {
+  font: inherit;
+  font-size: 16px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+#theme-btn:hover { border-color: var(--accent); }
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Վերևի մաս՝ «Մուտք» և «Գրանցվել» հղումներ */
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+.auth-box { display: flex; align-items: center; gap: 16px; }
+.auth-box[hidden] { display: none; }
+
+.hello { font-weight: 600; font-size: 16px; }
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover,
+.nav-link[aria-current="page"] { border-bottom-color: var(--accent); }
+
+.nav-link.strong { color: var(--accent); }
+
+/* Ձևեր */
+.auth-form { display: grid; gap: 18px; }
+
+.field label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.field input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.field input:focus { border-color: var(--accent); }
+
+.field input[aria-invalid="true"] { border-color: var(--error); }
+
+.field-error {
+  margin: 6px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--error);
+}
+
+.field-error:empty { display: none; }
+
+.btn {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary { background: var(--accent); color: var(--surface); }
+.btn-primary:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.6; cursor: wait; }
+
+.switch {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.switch a {
+  display: inline-block;
+  padding: 10px 4px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Գլխավոր բլոկ */
+.hero {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 40px 0 56px;
+}
+
+.hero h1 {
+  font-size: clamp(30px, 4.6vw, 46px);
+  margin-bottom: 18px;
+}
+
+.hero p {
+  font-size: 19px;
+  color: var(--muted);
+  margin: 0;
+  max-width: 34ch;
+}
+
+.hero-art {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Գույների դասեր SVG նկարների համար */
+.f-bg { fill: var(--bg); }
+.f-surface { fill: var(--surface); }
+.f-ink { fill: var(--ink); }
+.f-muted { fill: var(--muted); }
+.f-line { fill: var(--line); }
+.f-accent { fill: var(--accent); }
+.f-accent-soft { fill: var(--accent-soft); }
+.f-warm { fill: var(--warm); }
+.f-warm-soft { fill: var(--warm-soft); }
+.f-wood { fill: var(--wood); }
+.f-wood-dark { fill: var(--wood-dark); }
+.s-ink { stroke: var(--ink); }
+.s-muted { stroke: var(--muted); }
+.s-line { stroke: var(--line); }
+.s-accent { stroke: var(--accent); }
+.s-surface { stroke: var(--surface); }
+
+.steam path {
+  animation: rise 3.5s ease-in-out infinite;
+}
+.steam path:nth-child(2) { animation-delay: 1.2s; }
+
+@keyframes rise {
+  0%   { opacity: 0;   transform: translateY(6px); }
+  40%  { opacity: 0.8; }
+  100% { opacity: 0;   transform: translateY(-10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steam path { animation: none; opacity: 0.7; }
+  body { transition: none; }
+}
+
+/* Բաժիններ */
+section { padding: 40px 0; }
+
+h2 {
+  font-size: clamp(24px, 3vw, 30px);
+  margin-bottom: 24px;
+}
+
+/* Ում համար է */
+.audience {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.audience article {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.audience svg {
+  flex-shrink: 0;
+  width: 88px;
+  height: 88px;
+}
+
+.audience h3 { font-size: 19px; margin-bottom: 4px; }
+.audience p { margin: 0; color: var(--muted); }
+
+/* Ինչպես է աշխատում */
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  counter-reset: step;
+}
+
+.steps li {
+  counter-increment: step;
+  position: relative;
+  padding-top: 8px;
+}
+
+.step-icon {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.step-icon svg { width: 38px; height: 38px; }
+
+.step-icon::after {
+  content: counter(step);
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--warm);
+  color: #2b1d08;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Գիծ, որը միացնում է քայլերը */
+.steps li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 44px;
+  left: 88px;
+  right: -4px;
+  border-top: 2px dashed var(--line);
+}
+
+.steps h3 { font-size: 18px; margin-bottom: 4px; }
+.steps p { margin: 0; color: var(--muted); }
+
+/* Հնարավորություններ */
+.progress-wrap {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+}
+
+.ready-count {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.progress {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.8s ease;
+}
+
+.features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 28px;
+}
+
+.features li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.mark {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--muted);
+  margin-top: 2px;
+}
+
+.mark.done {
+  background: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.mark svg { width: 15px; height: 15px; }
+
+.feature-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.status {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--warm-soft);
+  color: var(--ink);
+}
+
+.status.done { background: var(--accent-soft); }
+
+.feature-desc {
+  display: block;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+footer {
+  padding: 32px 0 48px;
+  color: var(--muted);
+  font-size: 15px;
+  text-align: center;
+}
+
+/* Հեռախոսների համար */
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; padding-top: 16px; text-align: center; }
+  .hero p { margin: 0 auto; }
+  .hero-art { max-width: 420px; margin: 0 auto; }
+  .audience, .features { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; gap: 24px; }
+  .steps li { display: flex; gap: 18px; align-items: flex-start; padding-top: 0; }
+  .steps li:not(:last-child)::before { display: none; }
+  .step-icon { flex-shrink: 0; margin-bottom: 0; }
+}
+
+@media (max-width: 560px) {
+  header { flex-wrap: wrap; gap: 12px; }
+  .header-actions { width: 100%; justify-content: space-between; flex-wrap: nowrap; gap: 8px; }
+  .auth-box { gap: 14px; }
+  #theme-btn { padding: 8px 12px; }
+}
+
+@media (max-width: 360px) {
+  .header-actions { flex-wrap: wrap; justify-content: flex-start; }
+}
+
+@media (max-width: 420px) {
+  .audience article { flex-direction: column; text-align: center; }
+}
+
+/* Մուտքի և գրանցման էջեր */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 56px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+}
+
+.auth-card h1 {
+  font-size: 30px;
+  margin-bottom: 6px;
+}
+
+.auth-card .lead {
+  margin: 0 0 22px;
+  font-size: 17px;
+  color: var(--muted);
+}
+
+@media (max-width: 420px) {
+  .auth-page { padding-top: 12px; }
+  .auth-card { padding: 22px 16px; border-radius: 16px; }
+}
+

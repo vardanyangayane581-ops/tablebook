@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Գրանցում · Tablebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/validation.js" defer></script>
+  <script src="/auth.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <!-- Լոգո՝ սուրճի բաժակ -->
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Մուտք, գրանցում և թեմա">
+        <div class="auth-box" id="auth-guest">
+          <a class="nav-link" href="/login">Մուտք</a>
+          <a class="nav-link strong" href="/register" aria-current="page">Գրանցվել</a>
+        </div>
+        <div class="auth-box" id="auth-user" hidden>
+          <span class="hello" id="hello"></span>
+        </div>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <main class="auth-page">
+      <div class="auth-card">
+        <h1>Գրանցում</h1>
+
+        <form class="auth-form" data-mode="register" novalidate>
+          <div class="field">
+            <label for="reg-first">Անուն</label>
+            <input id="reg-first" name="first_name" type="text" aria-describedby="first_name-error" autocomplete="given-name" maxlength="50" required autofocus>
+            <p class="field-error" id="first_name-error"></p>
+          </div>
+          <div class="field">
+            <label for="reg-last">Ազգանուն</label>
+            <input id="reg-last" name="last_name" type="text" aria-describedby="last_name-error" autocomplete="family-name" maxlength="50" required>
+            <p class="field-error" id="last_name-error"></p>
+          </div>
+          <div class="field">
+            <label for="reg-email">Էլ-փոստ</label>
+            <input id="reg-email" name="email" type="email" aria-describedby="email-error" autocomplete="email" required>
+            <p class="field-error" id="email-error"></p>
+          </div>
+          <div class="field">
+            <label for="reg-phone">Հեռախոսահամար</label>
+            <input id="reg-phone" name="telephone" type="tel" aria-describedby="telephone-error" autocomplete="tel" inputmode="tel" placeholder="+374 91 123456" required>
+            <p class="field-error" id="telephone-error"></p>
+          </div>
+          <div class="field">
+            <label for="reg-password">Գաղտնաբառ</label>
+            <input id="reg-password" name="password" type="password" aria-describedby="password-error" autocomplete="new-password" minlength="8" required>
+            <p class="field-error" id="password-error"></p>
+          </div>
+          <p class="field-error" id="form-error" role="alert"></p>
+          <button class="btn btn-primary" type="submit">Գրանցվել</button>
+        </form>
+
+        <p class="switch">Արդեն ունե՞ք հաշիվ։ <a href="/login">Մուտք</a></p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

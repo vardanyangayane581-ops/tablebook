@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tablebook · Սեղանի ամրագրում սրճարանների համար</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/auth.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <!-- Լոգո՝ սուրճի բաժակ -->
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Մուտք, գրանցում և թեմա">
+        <div class="auth-box" id="auth-guest">
+          <a class="nav-link" href="/login">Մուտք</a>
+          <a class="nav-link strong" href="/register">Գրանցվել</a>
+        </div>
+        <div class="auth-box" id="auth-user" hidden>
+          <span class="hello" id="hello"></span>
+        </div>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <div class="hero">
+      <div>
+        <h1>Սեղանի ամրագրում փոքր սրճարանների համար</h1>
+        <p>Պարզ և արագ ամրագրումներ՝ առանց զանգերի և թղթերի։</p>
+      </div>
+
+      <!-- Գլխավոր նկար՝ սրճարանի սեղան ամրագրված նշանով -->
+      <svg class="hero-art" viewBox="20 20 420 310" role="img" aria-label="Սրճարանի սեղան երկու բաժակ սուրճով և «Ամրագրված» նշանով">
+        <circle cx="225" cy="180" r="150" class="f-accent-soft"/>
+
+        <!-- Կախովի լամպ -->
+        <line x1="225" y1="0" x2="225" y2="58" class="s-muted" stroke-width="2"/>
+        <path d="M193 92 Q193 58 225 58 Q257 58 257 92 Z" class="f-warm"/>
+        <ellipse cx="225" cy="93" rx="12" ry="4" class="f-warm-soft"/>
+
+        <!-- Բույս -->
+        <g>
+          <ellipse cx="70" cy="196" rx="12" ry="30" transform="rotate(-25 70 196)" class="f-accent"/>
+          <ellipse cx="95" cy="190" rx="11" ry="32" transform="rotate(18 95 190)" class="f-accent"/>
+          <ellipse cx="82" cy="182" rx="10" ry="34" class="f-accent" opacity="0.75"/>
+          <path d="M58 228h48l-6 70h-36z" class="f-wood"/>
+          <rect x="54" y="224" width="56" height="10" rx="3" class="f-wood-dark"/>
+        </g>
+
+        <!-- Աթոռներ -->
+        <rect x="128" y="150" width="12" height="148" rx="6" class="f-wood-dark"/>
+        <rect x="128" y="236" width="56" height="10" rx="5" class="f-wood-dark"/>
+        <rect x="310" y="150" width="12" height="148" rx="6" class="f-wood-dark"/>
+        <rect x="266" y="236" width="56" height="10" rx="5" class="f-wood-dark"/>
+
+        <!-- Սեղան -->
+        <ellipse cx="225" cy="306" rx="70" ry="9" class="f-ink" opacity="0.12"/>
+        <rect x="218" y="214" width="14" height="86" class="f-wood-dark"/>
+        <ellipse cx="225" cy="300" rx="38" ry="7" class="f-wood-dark"/>
+        <ellipse cx="225" cy="214" rx="112" ry="20" class="f-wood"/>
+        <ellipse cx="225" cy="209" rx="112" ry="20" class="f-warm-soft"/>
+
+        <!-- Բաժակներ -->
+        <g>
+          <ellipse cx="172" cy="206" rx="22" ry="5" class="f-surface s-line" stroke-width="2"/>
+          <path d="M157 180h30v12a15 13 0 0 1-30 0z" class="f-surface s-ink" stroke-width="2"/>
+          <path d="M187 184h4a5 5 0 0 1 0 10h-5" fill="none" class="s-ink" stroke-width="2"/>
+          <g class="steam" fill="none" stroke-width="2" stroke-linecap="round">
+            <path d="M167 172c-4-6 4-9 0-16" class="s-muted"/>
+            <path d="M177 172c-4-6 4-9 0-16" class="s-muted"/>
+          </g>
+        </g>
+        <g>
+          <ellipse cx="282" cy="210" rx="20" ry="5" class="f-surface s-line" stroke-width="2"/>
+          <path d="M268 186h28v11a14 12 0 0 1-28 0z" class="f-surface s-ink" stroke-width="2"/>
+          <path d="M268 190h-4a5 5 0 0 0 0 10h5" fill="none" class="s-ink" stroke-width="2"/>
+        </g>
+
+        <!-- «Ամրագրված» նշան -->
+        <g>
+          <path d="M196 204l6-36h64l6 36z" class="f-surface s-ink" stroke-width="2" stroke-linejoin="round"/>
+          <text x="234" y="191" text-anchor="middle" font-size="9.5" font-weight="600" class="f-accent" font-family="Noto Sans Armenian, Arial, sans-serif">Ամրագրված</text>
+        </g>
+
+        <!-- Ամրագրման քարտ -->
+        <g transform="translate(284 48)">
+          <rect x="0" y="0" width="150" height="70" rx="14" class="f-surface s-line" stroke-width="2"/>
+          <circle cx="128" cy="35" r="11" class="f-accent"/>
+          <path d="M123 35l4 4 7-8" fill="none" class="s-surface" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="14" y="28" font-size="13" font-weight="600" class="f-ink" font-family="Noto Sans Armenian, Arial, sans-serif">Շաբաթ, 19:30</text>
+          <text x="14" y="50" font-size="12" class="f-muted" font-family="Noto Sans Armenian, Arial, sans-serif">4 հյուր, սեղան 7</text>
+        </g>
+      </svg>
+    </div>
+
+    <section>
+      <h2>Ում համար է</h2>
+      <div class="audience">
+        <article>
+          <!-- Սրճարանի ցուցափեղկ -->
+          <svg viewBox="0 0 88 88" aria-hidden="true">
+            <circle cx="44" cy="44" r="44" class="f-warm-soft"/>
+            <rect x="18" y="36" width="52" height="34" rx="2" class="f-surface s-ink" stroke-width="2"/>
+            <path d="M14 26h60l-4 12H18z" class="f-accent"/>
+            <path d="M24 26l-2 12M34 26v12M44 26v12M54 26v12M64 26l2 12" class="s-surface" stroke-width="5"/>
+            <rect x="24" y="44" width="18" height="14" rx="2" class="f-accent-soft s-ink" stroke-width="1.5"/>
+            <rect x="48" y="44" width="14" height="26" rx="2" class="f-wood"/>
+            <circle cx="58" cy="58" r="1.6" class="f-warm"/>
+          </svg>
+          <div>
+            <h3>Սրճարանատերեր</h3>
+            <p>Սրճարանների և փոքր ռեստորանների տերերի համար</p>
+          </div>
+        </article>
+        <article>
+          <!-- Հեռախոս օրացույցով -->
+          <svg viewBox="0 0 88 88" aria-hidden="true">
+            <circle cx="44" cy="44" r="44" class="f-accent-soft"/>
+            <rect x="28" y="14" width="32" height="60" rx="6" class="f-surface s-ink" stroke-width="2"/>
+            <rect x="40" y="18" width="8" height="2.5" rx="1.2" class="f-line"/>
+            <rect x="33" y="28" width="22" height="20" rx="3" class="f-warm-soft"/>
+            <rect x="33" y="28" width="22" height="6" rx="3" class="f-warm"/>
+            <circle cx="39" cy="40" r="1.6" class="f-muted"/>
+            <circle cx="44" cy="40" r="1.6" class="f-muted"/>
+            <circle cx="49" cy="40" r="2.4" class="f-accent"/>
+            <rect x="33" y="54" width="22" height="9" rx="4.5" class="f-accent"/>
+          </svg>
+          <div>
+            <h3>Հյուրեր</h3>
+            <p>Հյուրերի, ովքեր ուզում են արագ սեղան ամրագրել</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ինչպես է աշխատում</h2>
+      <ol class="steps">
+        <li>
+          <div class="step-icon">
+            <svg viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="6" y="9" width="28" height="25" rx="4" class="f-surface s-ink" stroke-width="2"/>
+              <path d="M6 16h28" class="s-ink" stroke-width="2"/>
+              <path d="M13 6v6M27 6v6" class="s-ink" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="25" cy="25" r="3.5" class="f-warm"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Ընտրություն</h3>
+            <p>Հյուրը ընտրում է օրը, ժամը, հյուրերի քանակը</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-icon">
+            <svg viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="8" y="6" width="24" height="30" rx="3" class="f-surface s-ink" stroke-width="2"/>
+              <path d="M13 14h14M13 20h10" class="s-muted" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="27" cy="28" r="7" class="f-accent"/>
+              <path d="M24 28l2.2 2.2 4-4.4" fill="none" class="s-surface" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Հաստատում</h3>
+            <p>Սրճարանը տեսնում է նոր ամրագրումը և հաստատում է այն</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-icon">
+            <svg viewBox="0 0 40 40" aria-hidden="true">
+              <path d="M6 10a4 4 0 0 1 4-4h20a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H16l-7 6v-6H10a4 4 0 0 1-4-4z" class="f-surface s-ink" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M14 17l4 4 8-8" fill="none" class="s-accent" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Հաղորդագրություն</h3>
+            <p>Հյուրը ստանում է հաստատման հաղորդագրություն</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Իմ նախագծի հնարավորությունները</h2>
+      <div class="progress-wrap">
+        <p class="ready-count" id="ready-count"></p>
+        <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+        <ul class="features" id="features-list"></ul>
+      </div>
+    </section>
+
+    <footer>© 2026 Tablebook։ Ստեղծված է փոքր սրճարանների համար։</footer>
+  </div>
+
+  <script>
+    // Նախագծի հնարավորությունների ցուցակը՝ անուն, նկարագրություն և պատրաստ է թե ոչ
+    const features = [
+      { name: "Սեղանի ամրագրում", description: "Հյուրը ընտրում է օրը, ժամը և հյուրերի քանակը", ready: true },
+      { name: "Մուգ և բաց թեմա", description: "Էջի թեման փոխվում է մեկ կոճակով", ready: true },
+      { name: "Ամրագրման հաստատում", description: "Սրճարանը հաստատում կամ մերժում է նոր ամրագրումը", ready: true },
+      { name: "Հաղորդագրություն հյուրին", description: "Հյուրը ստանում է SMS կամ email հաստատում", ready: false },
+      { name: "Սեղանների քարտեզ", description: "Սրճարանի սրահի սխեման՝ ազատ և զբաղված սեղաններով", ready: false },
+      { name: "Վիճակագրություն տիրոջ համար", description: "Ամրագրումների քանակը ըստ օրերի և ժամերի", ready: false }
+    ];
+
+    let տարիք = 18;
+    let անուններ = ["Գագիկ", "Դանիել", "Հենրի", "Գայանե"];
+
+    // Վերադարձնում է պատրաստ հնարավորությունների քանակը
+    function countReady(list) {
+      let count = 0;
+      for (const feature of list) {
+        if (feature.ready) count++;
+      }
+      return count;
+    }
+
+    // Կրկնությամբ ցուցադրում ենք յուրաքանչյուր հնարավորություն
+    const featuresList = document.getElementById("features-list");
+    const checkIcon = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    for (const feature of features) {
+      const li = document.createElement("li");
+
+      // Պատրաստի առջև՝ նշիչ, մնացածի առջև՝ կետագծով շրջան
+      const mark = document.createElement("span");
+      mark.className = feature.ready ? "mark done" : "mark";
+      if (feature.ready) mark.innerHTML = checkIcon;
+
+      const text = document.createElement("div");
+
+      const title = document.createElement("span");
+      title.className = "feature-title";
+      title.textContent = feature.name;
+
+      const status = document.createElement("span");
+      status.className = feature.ready ? "status done" : "status";
+      status.textContent = feature.ready ? "Պատրաստ է" : "Ընթացքում";
+      title.append(status);
+
+      const desc = document.createElement("span");
+      desc.className = "feature-desc";
+      desc.textContent = feature.description;
+
+      text.append(title, desc);
+      li.append(mark, text);
+      featuresList.appendChild(li);
+    }
+
+    // Ցուցակի վերևում ցույց ենք տալիս պատրաստների քանակը և առաջընթացի գիծը
+    const ready = countReady(features);
+    document.getElementById("ready-count").textContent =
+      "Պատրաստ է " + ready + " հնարավորություն " + features.length + "-ից";
+    requestAnimationFrame(function () {
+      document.getElementById("progress-bar").style.width = (ready / features.length * 100) + "%";
+    });
+  </script>
+</body>
+</html>
