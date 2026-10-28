@@ -40,10 +40,15 @@ html { background: var(--bg); }
 
 body {
   margin: 0;
+  min-height: 100vh;
   font-family: "Noto Sans Armenian", "Segoe UI", Arial, sans-serif;
   font-size: 17px;
   line-height: 1.65;
-  background: var(--bg);
+  /* Փափուկ գունավոր բծեր ֆոնի վրա */
+  background:
+    radial-gradient(circle at 8% 0%, var(--accent-soft), transparent 38%),
+    radial-gradient(circle at 95% 12%, var(--warm-soft), transparent 32%),
+    var(--bg);
   color: var(--ink);
   transition: background 0.3s, color 0.3s;
 }
@@ -229,6 +234,112 @@ input:focus-visible {
   width: 100%;
   height: auto;
   display: block;
+  filter: drop-shadow(0 18px 30px rgba(31, 42, 38, 0.12));
+}
+
+/* Փոքր պիտակ վերնագրի վերևում */
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Վերնագրի ընդգծված բառեր */
+.hl {
+  color: var(--accent);
+  background: linear-gradient(transparent 62%, var(--warm-soft) 62%);
+  border-radius: 4px;
+}
+
+/* Գլխավոր կոճակներ */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  border: 2px solid var(--accent);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.btn-pill.primary {
+  background: var(--accent);
+  color: var(--surface);
+  box-shadow: 0 8px 20px rgba(42, 122, 95, 0.25);
+}
+
+.btn-pill.ghost {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.btn-pill:hover { transform: translateY(-2px); }
+
+/* Ամրագրման քարտը նկարում թեթև «լողում» է */
+.float { animation: float 5s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -6px; }
+}
+
+/* Սրճարանի մթնոլորտ */
+.section-lead {
+  margin: -14px 0 24px;
+  color: var(--muted);
+}
+
+.moments-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.moments figure {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.moments figure:hover { transform: translateY(-4px); }
+
+.moments svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.moments figcaption {
+  padding: 14px 18px 18px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.moments figcaption strong {
+  display: block;
+  font-family: "Noto Serif Armenian", Georgia, serif;
+  font-size: 18px;
+  color: var(--ink);
 }
 
 /* Գույների դասեր SVG նկարների համար */
@@ -248,6 +359,7 @@ input:focus-visible {
 .s-line { stroke: var(--line); }
 .s-accent { stroke: var(--accent); }
 .s-surface { stroke: var(--surface); }
+.s-wood-dark { stroke: var(--wood-dark); }
 
 .steam path {
   animation: rise 3.5s ease-in-out infinite;
@@ -260,9 +372,13 @@ input:focus-visible {
   100% { opacity: 0;   transform: translateY(-10px); }
 }
 
+.steam path:nth-child(3) { animation-delay: 2.4s; }
+
 @media (prefers-reduced-motion: reduce) {
   .steam path { animation: none; opacity: 0.7; }
+  .float { animation: none; }
   body { transition: none; }
+  .btn-pill, .moments figure, .audience article, .steps li { transition: none; }
 }
 
 /* Բաժիններ */
@@ -288,7 +404,11 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 22px;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s;
 }
+
+.audience article:hover { transform: translateY(-4px); }
 
 .audience svg {
   flex-shrink: 0;
@@ -313,8 +433,15 @@ h2 {
 .steps li {
   counter-increment: step;
   position: relative;
-  padding-top: 8px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s;
 }
+
+.steps li:hover { transform: translateY(-4px); }
 
 .step-icon {
   position: relative;
@@ -341,20 +468,20 @@ h2 {
   background: var(--warm);
   color: #2b1d08;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Գիծ, որը միացնում է քայլերը */
+/* Գիծ, որը միացնում է քայլերի քարտերը */
 .steps li:not(:last-child)::before {
   content: "";
   position: absolute;
-  top: 44px;
-  left: 88px;
-  right: -4px;
-  border-top: 2px dashed var(--line);
+  top: 60px;
+  left: 100%;
+  width: 20px;
+  border-top: 2px dashed var(--accent);
 }
 
 .steps h3 { font-size: 18px; margin-bottom: 4px; }
@@ -366,6 +493,7 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 24px;
+  box-shadow: var(--shadow);
 }
 
 .ready-count {
@@ -386,7 +514,7 @@ h2 {
   height: 100%;
   width: 0;
   border-radius: inherit;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), var(--warm));
   transition: width 0.8s ease;
 }
 
@@ -435,7 +563,7 @@ h2 {
 }
 
 .status {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   padding: 1px 10px;
   border-radius: 999px;
@@ -448,24 +576,37 @@ h2 {
 .feature-desc {
   display: block;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 footer {
   padding: 32px 0 48px;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 16px;
   text-align: center;
+}
+
+footer .beans {
+  display: block;
+  width: 60px;
+  height: 20px;
+  margin: 0 auto 10px;
+}
+
+/* Պլանշետների համար */
+@media (max-width: 900px) {
+  .moments-grid { grid-template-columns: 1fr 1fr; }
 }
 
 /* Հեռախոսների համար */
 @media (max-width: 760px) {
   .hero { grid-template-columns: 1fr; padding-top: 16px; text-align: center; }
   .hero p { margin: 0 auto; }
+  .hero-actions { justify-content: center; }
   .hero-art { max-width: 420px; margin: 0 auto; }
   .audience, .features { grid-template-columns: 1fr; }
   .steps { grid-template-columns: 1fr; gap: 24px; }
-  .steps li { display: flex; gap: 18px; align-items: flex-start; padding-top: 0; }
+  .steps li { display: flex; gap: 18px; align-items: flex-start; padding: 20px; }
   .steps li:not(:last-child)::before { display: none; }
   .step-icon { flex-shrink: 0; margin-bottom: 0; }
 }
@@ -483,6 +624,10 @@ footer {
 
 @media (max-width: 420px) {
   .audience article { flex-direction: column; text-align: center; }
+}
+
+@media (max-width: 560px) {
+  .moments-grid { grid-template-columns: 1fr; }
 }
 
 /* Մուտքի և գրանցման էջեր */

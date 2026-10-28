@@ -38,8 +38,13 @@
 
     <div class="hero">
       <div>
-        <h1>Սեղանի ամրագրում փոքր սրճարանների համար</h1>
+        <span class="eyebrow">☕ Սուրճ, թխվածք և ազատ սեղան</span>
+        <h1>Սեղանի ամրագրում <span class="hl">փոքր սրճարանների</span> համար</h1>
         <p>Պարզ և արագ ամրագրումներ՝ առանց զանգերի և թղթերի։</p>
+        <div class="hero-actions">
+          <a class="btn-pill primary" href="/register">Ամրագրել սեղան</a>
+          <a class="btn-pill ghost" href="#how">Ինչպես է աշխատում</a>
+        </div>
       </div>
 
       <!-- Գլխավոր նկար՝ սրճարանի սեղան ամրագրված նշանով -->
@@ -96,7 +101,7 @@
         </g>
 
         <!-- Ամրագրման քարտ -->
-        <g transform="translate(284 48)">
+        <g class="float" transform="translate(284 48)">
           <rect x="0" y="0" width="150" height="70" rx="14" class="f-surface s-line" stroke-width="2"/>
           <circle cx="128" cy="35" r="11" class="f-accent"/>
           <path d="M123 35l4 4 7-8" fill="none" class="s-surface" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -105,6 +110,87 @@
         </g>
       </svg>
     </div>
+
+    <!-- Սրճարանի մթնոլորտ՝ երեք նկար -->
+    <section class="moments" aria-labelledby="moments-title">
+      <h2 id="moments-title">Սրճարանի մթնոլորտ</h2>
+      <p class="section-lead">Ամրագրեք ձեր սիրելի սեղանը և վայելեք պահը։</p>
+      <div class="moments-grid">
+        <figure>
+          <!-- Լատտե՝ սրտիկով -->
+          <svg viewBox="0 0 240 180" role="img" aria-label="Լատտեի բաժակ սրտիկի նախշով">
+            <rect width="240" height="180" class="f-warm-soft"/>
+            <circle cx="200" cy="30" r="46" class="f-surface" opacity="0.5"/>
+            <g class="f-wood-dark">
+              <ellipse cx="38" cy="146" rx="9" ry="6" transform="rotate(-30 38 146)"/>
+              <ellipse cx="58" cy="158" rx="9" ry="6" transform="rotate(20 58 158)"/>
+              <ellipse cx="198" cy="150" rx="9" ry="6" transform="rotate(-10 198 150)"/>
+            </g>
+            <ellipse cx="120" cy="140" rx="72" ry="14" class="f-surface s-line" stroke-width="2"/>
+            <path d="M160 86h8a13 13 0 0 1 0 26h-12" fill="none" class="s-ink" stroke-width="3"/>
+            <path d="M80 78h80v22a40 36 0 0 1-80 0z" class="f-surface s-ink" stroke-width="2"/>
+            <ellipse cx="120" cy="78" rx="40" ry="9" class="f-wood s-ink" stroke-width="2"/>
+            <path d="M120 84c-9-5-11-10-6-12 3-1 5 1 6 3 1-2 3-4 6-3 5 2 3 7-6 12z" class="f-warm-soft"/>
+            <g class="steam" fill="none" stroke-width="2.5" stroke-linecap="round">
+              <path d="M108 64c-5-7 5-11 0-20" class="s-muted"/>
+              <path d="M124 64c-5-7 5-11 0-20" class="s-muted"/>
+              <path d="M140 64c-5-7 5-11 0-20" class="s-muted"/>
+            </g>
+          </svg>
+          <figcaption><strong>Թարմ սուրճ</strong>Ձեր սիրելի բաժակը արդեն սպասում է։</figcaption>
+        </figure>
+        <figure>
+          <!-- Կրուասան ափսեի վրա -->
+          <svg viewBox="0 0 240 180" role="img" aria-label="Կրուասան ափսեի վրա և էսպրեսսոյի բաժակ">
+            <rect width="240" height="180" class="f-accent-soft"/>
+            <circle cx="36" cy="28" r="40" class="f-surface" opacity="0.5"/>
+            <ellipse cx="110" cy="132" rx="82" ry="18" class="f-surface s-line" stroke-width="2"/>
+            <ellipse cx="110" cy="130" rx="60" ry="11" class="f-line" opacity="0.6"/>
+            <g class="f-warm s-wood-dark" stroke-width="2">
+              <ellipse cx="66" cy="118" rx="10" ry="15" transform="rotate(-55 66 118)"/>
+              <ellipse cx="154" cy="118" rx="10" ry="15" transform="rotate(55 154 118)"/>
+              <ellipse cx="86" cy="108" rx="15" ry="22" transform="rotate(-28 86 108)"/>
+              <ellipse cx="134" cy="108" rx="15" ry="22" transform="rotate(28 134 108)"/>
+              <ellipse cx="110" cy="102" rx="19" ry="27"/>
+            </g>
+            <path d="M102 90q8 6 16 0M100 104q10 6 20 0" fill="none" class="s-wood-dark" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+            <g class="f-wood">
+              <circle cx="60" cy="140" r="2"/>
+              <circle cx="160" cy="142" r="2.4"/>
+              <circle cx="148" cy="134" r="1.6"/>
+            </g>
+            <ellipse cx="204" cy="132" rx="22" ry="5" class="f-surface s-line" stroke-width="2"/>
+            <path d="M190 110h28v10a14 12 0 0 1-28 0z" class="f-surface s-ink" stroke-width="2"/>
+            <ellipse cx="204" cy="110" rx="14" ry="3.5" class="f-wood-dark"/>
+          </svg>
+          <figcaption><strong>Տաք թխվածք</strong>Առավոտյան կրուասան՝ սուրճի հետ։</figcaption>
+        </figure>
+        <figure>
+          <!-- Հարմարավետ անկյուն պատուհանի մոտ -->
+          <svg viewBox="0 0 240 180" role="img" aria-label="Սեղան պատուհանի մոտ՝ լամպով և ծաղկամանով">
+            <rect width="240" height="180" class="f-surface"/>
+            <rect y="150" width="240" height="30" class="f-line"/>
+            <rect x="28" y="22" width="104" height="96" rx="6" class="f-accent-soft s-wood-dark" stroke-width="5"/>
+            <circle cx="100" cy="52" r="14" class="f-warm"/>
+            <path d="M28 96q30-22 52-6t52-10v38H28z" class="f-accent" opacity="0.55"/>
+            <path d="M80 22v96M28 70h104" class="s-wood-dark" stroke-width="4"/>
+            <rect x="22" y="116" width="116" height="8" rx="3" class="f-wood"/>
+            <line x1="190" y1="0" x2="190" y2="44" class="s-muted" stroke-width="2"/>
+            <circle cx="190" cy="70" r="30" class="f-warm-soft"/>
+            <path d="M168 66q0-22 22-22t22 22z" class="f-warm"/>
+            <ellipse cx="170" cy="128" rx="48" ry="9" class="f-wood"/>
+            <rect x="164" y="132" width="12" height="30" class="f-wood-dark"/>
+            <ellipse cx="170" cy="162" rx="22" ry="4" class="f-wood-dark"/>
+            <path d="M178 104h14l-2 20h-10z" class="f-surface s-ink" stroke-width="2"/>
+            <path d="M185 104c0-10-8-12-10-20M185 104c0-8 6-14 10-18" fill="none" class="s-accent" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="175" cy="83" r="5" class="f-warm"/>
+            <circle cx="196" cy="85" r="5" class="f-warm"/>
+            <path d="M148 118h18v6a9 8 0 0 1-18 0z" class="f-surface s-ink" stroke-width="2"/>
+          </svg>
+          <figcaption><strong>Հարմարավետ անկյուն</strong>Ընտրեք սեղան պատուհանի մոտ։</figcaption>
+        </figure>
+      </div>
+    </section>
 
     <section>
       <h2>Ում համար է</h2>
@@ -146,7 +232,7 @@
       </div>
     </section>
 
-    <section>
+    <section id="how">
       <h2>Ինչպես է աշխատում</h2>
       <ol class="steps">
         <li>
@@ -201,7 +287,17 @@
       </div>
     </section>
 
-    <footer>© 2026 Tablebook։ Ստեղծված է փոքր սրճարանների համար։</footer>
+    <footer>
+      <!-- Սուրճի հատիկներ՝ որպես զարդ -->
+      <svg class="beans" viewBox="0 0 60 20" aria-hidden="true">
+        <g class="f-wood">
+          <ellipse cx="10" cy="10" rx="7" ry="5" transform="rotate(-25 10 10)"/>
+          <ellipse cx="30" cy="10" rx="7" ry="5"/>
+          <ellipse cx="50" cy="10" rx="7" ry="5" transform="rotate(25 50 10)"/>
+        </g>
+      </svg>
+      © 2026 Tablebook։ Ստեղծված է փոքր սրճարանների համար։
+    </footer>
   </div>
 
   <script>
