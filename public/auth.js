@@ -23,6 +23,24 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch(function () {});
 
+  // «Դուրս գալ»՝ ջնջում ենք սեսիան և վերադառնում գլխավոր էջ
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async function () {
+      logoutBtn.disabled = true;
+      try {
+        const res = await fetch("/api/logout", { method: "POST" });
+        // Գլխավոր էջ ենք անցնում միայն, եթե սերվերը իսկապես ջնջեց սեսիան
+        if (res.ok) {
+          window.location.href = "/";
+          return;
+        }
+      } catch (e) {}
+      logoutBtn.disabled = false;
+      logoutBtn.textContent = "Չհաջողվեց, փորձեք կրկին";
+    });
+  }
+
   if (!form) return;
 
   // Սխալը ցույց ենք տալիս համապատասխան դաշտի տակ

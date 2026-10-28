@@ -170,6 +170,15 @@ app.get("/api/me", (req, res) => {
   res.json({ user: row ? publicUser(row) : null });
 });
 
+// Դուրս գալ՝ ջնջում ենք սեսիան և cookie-ն
+app.post("/api/logout", (req, res, next) => {
+  req.session.destroy((err) => {
+    if (err) return next(err);
+    res.clearCookie("tablebook.sid");
+    res.json({ ok: true });
+  });
+});
+
 // Չգտնված API երթուղի
 app.use("/api", (req, res) => {
   res.status(404).json({ errors: { form: "Այսպիսի հասցե չկա։" } });
