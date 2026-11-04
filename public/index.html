@@ -11,7 +11,7 @@
   <script src="/theme.js"></script>
   <script src="/auth.js" defer></script>
 </head>
-<body>
+<body class="page-home">
   <div class="container">
     <header>
       <a class="logo" href="/">
@@ -31,6 +31,7 @@
         </div>
         <div class="auth-box" id="auth-user" hidden>
           <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-reservations">Իմ ամրագրումները</a>
           <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
         </div>
         <button id="theme-btn" type="button">Փոխել թեման</button>
@@ -43,7 +44,7 @@
         <h1>Սեղանի ամրագրում <span class="hl">փոքր սրճարանների</span> համար</h1>
         <p>Պարզ և արագ ամրագրումներ՝ առանց զանգերի և թղթերի։</p>
         <div class="hero-actions">
-          <a class="btn-pill primary" href="/register">Ամրագրել սեղան</a>
+          <a class="btn-pill primary" href="/book">Ամրագրել սեղան</a>
           <a class="btn-pill ghost" href="#how">Ինչպես է աշխատում</a>
         </div>
       </div>
@@ -306,7 +307,7 @@
     const features = [
       { name: "Սեղանի ամրագրում", description: "Հյուրը ընտրում է օրը, ժամը և հյուրերի քանակը", ready: true },
       { name: "Մուգ և բաց թեմա", description: "Էջի թեման փոխվում է մեկ կոճակով", ready: true },
-      { name: "Ամրագրման հաստատում", description: "Սրճարանը հաստատում կամ մերժում է նոր ամրագրումը", ready: true },
+      { name: "Ամրագրման հաստատում", description: "Սրճարանը հաստատում կամ մերժում է նոր ամրագրումը", ready: false },
       { name: "Հաղորդագրություն հյուրին", description: "Հյուրը ստանում է SMS կամ email հաստատում", ready: false },
       { name: "Սեղանների քարտեզ", description: "Սրճարանի սրահի սխեման՝ ազատ և զբաղված սեղաններով", ready: false },
       { name: "Վիճակագրություն տիրոջ համար", description: "Ամրագրումների քանակը ըստ օրերի և ժամերի", ready: false }

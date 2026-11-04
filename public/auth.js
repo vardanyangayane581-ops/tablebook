@@ -7,12 +7,26 @@ document.addEventListener("DOMContentLoaded", function () {
   const hello = document.getElementById("hello");
   const form = document.querySelector(".auth-form");
 
+  // Մուտքից հետո վերադառնում ենք այն էջը, որտեղից եկել է հյուրը (?next=/book)։
+  // Թույլ ենք տալիս միայն մեր կայքի հասցեները, ոչ թե արտաքին կայքեր
+  function nextPage() {
+    const next = new URLSearchParams(window.location.search).get("next") || "";
+    return /^\/[a-z0-9-]*$/.test(next) ? next : "/";
+  }
+
+  // «Գրանցվել»/«Մուտք» հղումները պահում են next-ը
+  if (form && nextPage() !== "/") {
+    for (const link of document.querySelectorAll('.switch a')) {
+      link.href = link.pathname + "?next=" + encodeURIComponent(nextPage());
+    }
+  }
+
   // Մուտք գործած հյուրի համար «Մուտք/Գրանցվել»-ի փոխարեն ցույց ենք տալիս անունը
   fetch("/api/me")
     .then(function (res) { return res.json(); })
     .then(function (body) {
       if (body.user && form) {
-        window.location.href = "/";
+        window.location.href = nextPage();
         return;
       }
       if (body.user) {
@@ -91,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       const body = await res.json().catch(function () { return {}; });
       if (res.ok) {
-        window.location.href = "/";
+        window.location.href = nextPage();
         return;
       }
       showErrors(body.errors || { form: V.MESSAGES.serverError });

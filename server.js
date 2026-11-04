@@ -5,7 +5,13 @@ const fs = require("node:fs");
 const express = require("express");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
-const { MESSAGES, validateRegistration, validateLogin } = require("./public/validation.js");
+const {
+  MESSAGES,
+  validateRegistration,
+  validateLogin,
+  validateReservation,
+  localDate
+} = require("./public/validation.js");
 
 // ---------- Կարգավորումներ .env ֆայլից ----------
 
@@ -37,16 +43,17 @@ const BCRYPT_ROUNDS = 12;
 
 // ---------- Տվյալների բազա ----------
 
-// Եթե բազան դեռ չկա, ստեղծում ենք այն schema.sql-ից
+// Եթե բազան դեռ չկա, ստեղծում ենք այն schema.sql-ից։
+// schema.sql-ը կատարում ենք ամեն գործարկման ժամանակ (CREATE ... IF NOT EXISTS),
+// որ հին բազայում էլ հայտնվեն նոր աղյուսակները
 function openDatabase() {
   const isNew = !fs.existsSync(DB_PATH);
   if (isNew) fs.mkdirSync(DATA_DIR, { recursive: true });
 
   const db = new DatabaseSync(DB_PATH);
-  if (isNew) {
-    db.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
-    console.log("Ստեղծվեց նոր տվյալների բազա՝ data/tablebook.db");
-  }
+  db.exec("PRAGMA foreign_keys = ON");
+  db.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
+  if (isNew) console.log("Ստեղծվեց նոր տվյալների բազա՝ data/tablebook.db");
   return db;
 }
 
@@ -62,6 +69,35 @@ const findUserById = db.prepare(
   "SELECT id, first_name, last_name, email, telephone, created_at FROM users WHERE id = ?"
 );
 
+const insertReservation = db.prepare(
+  "INSERT INTO reservations (user_id, date, time, guests, note) VALUES (?, ?, ?, ?, ?)"
+);
+// Նույն օրվա և ժամի համար նույն հյուրի մեկ ակտիվ ամրագրում
+const activeReservationAt = db.prepare(
+  "SELECT 1 FROM reservations WHERE user_id = ? AND date = ? AND time = ? AND status IN ('pending', 'confirmed')"
+);
+const reservationsOfUser = db.prepare(
+  "SELECT id, date, time, guests, note, status, created_at FROM reservations WHERE user_id = ? ORDER BY date DESC, time DESC"
+);
+const findReservation = db.prepare(
+  "SELECT id, date, time, guests, note, status, created_at FROM reservations WHERE id = ? AND user_id = ?"
+);
+const cancelReservationById = db.prepare(
+  "UPDATE reservations SET status = 'cancelled' WHERE id = ? AND user_id = ?"
+);
+
+function publicReservation(row) {
+  return {
+    id: Number(row.id),
+    date: row.date,
+    time: row.time,
+    guests: Number(row.guests),
+    note: row.note,
+    status: row.status,
+    created_at: row.created_at
+  };
+}
+
 // Օգտատիրոջ տվյալները պատասխանի համար՝ առանց գաղտնաբառի և հեշի
 function publicUser(row) {
   return {
@@ -74,8 +110,8 @@ function publicUser(row) {
   };
 }
 
-// Չգոյություն ունեցող էլ-փոստի դեպքում էլ ենք համեմատում կեղծ հեշի հետ,
-// որ պատասխանի արագությամբ հնարավոր չլինի գուշակել՝ էլ-փոստը գրանցված է, թե ոչ
+// Չգոյություն ունեցող էլ. փոստի դեպքում էլ ենք համեմատում կեղծ հեշի հետ,
+// որ պատասխանի արագությամբ հնարավոր չլինի գուշակել՝ էլ. փոստը գրանցված է, թե ոչ
 const DUMMY_HASH = bcrypt.hashSync("tablebook-dummy-password", BCRYPT_ROUNDS);
 
 // Մուտքից հետո նոր սեսիա ենք բացում (session fixation-ից պաշտպանություն)
@@ -127,7 +163,7 @@ app.post("/api/register", async (req, res, next) => {
     try {
       result = insertUser.run(data.first_name, data.last_name, data.email, data.telephone, passwordHash);
     } catch (err) {
-      // Եթե երկու գրանցում միաժամանակ եկան նույն էլ-փոստով
+      // Եթե երկու գրանցում միաժամանակ եկան նույն էլ. փոստով
       if (String(err.message).includes("UNIQUE")) {
         return res.status(409).json({ errors: { email: MESSAGES.emailTaken } });
       }
@@ -177,6 +213,48 @@ app.post("/api/logout", (req, res, next) => {
     res.clearCookie("tablebook.sid");
     res.json({ ok: true });
   });
+});
+
+// ---------- Ամրագրումներ ----------
+
+// Ամրագրումների բոլոր հարցումները միայն մուտք գործած հյուրի համար են
+function requireUser(req, res, next) {
+  if (req.session.userId && findUserById.get(req.session.userId)) return next();
+  res.status(401).json({ errors: { form: MESSAGES.loginNeeded } });
+}
+
+// Նոր ամրագրում
+app.post("/api/reservations", requireUser, (req, res) => {
+  const { data, errors } = validateReservation(req.body || {}, new Date());
+  if (Object.keys(errors).length > 0) return res.status(400).json({ errors });
+
+  if (activeReservationAt.get(req.session.userId, data.date, data.time)) {
+    return res.status(409).json({ errors: { form: MESSAGES.duplicate } });
+  }
+
+  const result = insertReservation.run(req.session.userId, data.date, data.time, data.guests, data.note);
+  const row = findReservation.get(Number(result.lastInsertRowid), req.session.userId);
+  res.status(201).json({ reservation: publicReservation(row) });
+});
+
+// Իմ ամրագրումները
+app.get("/api/reservations", requireUser, (req, res) => {
+  res.json({ reservations: reservationsOfUser.all(req.session.userId).map(publicReservation) });
+});
+
+// Չեղարկում. միայն իր, դեռ չանցած և չմերժված ամրագրումը
+app.post("/api/reservations/:id/cancel", requireUser, (req, res) => {
+  const id = Number(req.params.id);
+  const row = Number.isInteger(id) ? findReservation.get(id, req.session.userId) : null;
+  if (!row) return res.status(404).json({ errors: { form: MESSAGES.notFound } });
+
+  const isActive = row.status === "pending" || row.status === "confirmed";
+  if (!isActive || row.date < localDate(new Date())) {
+    return res.status(409).json({ errors: { form: MESSAGES.cannotCancel } });
+  }
+
+  cancelReservationById.run(id, req.session.userId);
+  res.json({ reservation: publicReservation(findReservation.get(id, req.session.userId)) });
 });
 
 // Չգտնված API երթուղի

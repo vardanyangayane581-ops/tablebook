@@ -7,19 +7,66 @@
     firstNameLong: "Անունը պետք է լինի առավելագույնը 50 նիշ",
     lastNameEmpty: "Գրեք ձեր ազգանունը",
     lastNameLong: "Ազգանունը պետք է լինի առավելագույնը 50 նիշ",
-    email: "Գրեք ճիշտ էլ-փոստ",
-    emailTaken: "Արդեն գրանցված էլ-փոստ",
+    email: "Գրեք ճիշտ էլ. փոստ",
+    emailTaken: "Այս էլ. փոստով հաշիվ արդեն կա",
     telephone: "Գրեք ճիշտ հեռախոսահամար",
     passwordEmpty: "Գրեք գաղտնաբառը",
-    passwordShort: "Գաղտնաբառը պետք է լինի առնվազն 8 նիշ",
+    passwordShort: "Գաղտնաբառը պետք է ունենա առնվազն 8 նիշ",
     passwordLong: "Գաղտնաբառը չափազանց երկար է",
-    loginFailed: "Սխալ մուտք",
+    loginFailed: "Էլ. փոստը կամ գաղտնաբառը սխալ է",
     serverError: "Սերվերի սխալ։ Փորձեք կրկին։",
-    serverDown: "Սերվերը հասանելի չէ։ Գործարկեք այն «npm start» հրամանով։"
+    serverDown: "Սերվերը հասանելի չէ։ Գործարկեք այն «npm start» հրամանով։",
+    loginNeeded: "Ամրագրելու համար նախ մուտք գործեք",
+    dateEmpty: "Ընտրեք օրը",
+    datePast: "Այս օրն արդեն անցել է",
+    dateFar: "Կարելի է ամրագրել առավելագույնը 60 օր առաջ",
+    timeEmpty: "Ընտրեք ժամը",
+    timeClosed: "Սրճարանը աշխատում է 09:00–22:00, վերջին ամրագրումը՝ 21:00",
+    timePast: "Այս ժամն այսօր արդեն անցել է",
+    guests: "Հյուրերի քանակը պետք է լինի 1-ից 12",
+    noteLong: "Նշումը պետք է լինի առավելագույնը 300 նիշ",
+    duplicate: "Այս օրվա և ժամի համար դուք արդեն ամրագրում ունեք",
+    notFound: "Ամրագրումը չի գտնվել",
+    cannotCancel: "Այս ամրագրումն այլևս չի կարելի չեղարկել"
   };
 
+  // Սրճարանի աշխատանքային ժամերը և ամրագրման սահմանները
+  const BOOKING = {
+    firstSlot: "09:00",
+    lastSlot: "21:00",
+    stepMinutes: 30,
+    maxGuests: 12,
+    maxDaysAhead: 60,
+    maxNoteLength: 300
+  };
+
+  function toMinutes(hhmm) {
+    return Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+  }
+
+  function pad(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  // Ժամերի ցուցակը՝ 09:00, 09:30, ... 21:00
+  const TIME_SLOTS = [];
+  for (let m = toMinutes(BOOKING.firstSlot); m <= toMinutes(BOOKING.lastSlot); m += BOOKING.stepMinutes) {
+    TIME_SLOTS.push(pad(Math.floor(m / 60)) + ":" + pad(m % 60));
+  }
+
+  // Օրը ՏՏՏՏ-ԱԱ-ՕՕ տեսքով՝ տեղական ժամով (ոչ UTC)
+  function localDate(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  function addDays(d, days) {
+    const copy = new Date(d);
+    copy.setDate(copy.getDate() + days);
+    return copy;
+  }
+
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  // Թույլատրվում են միայն թվանշաններ, բացատ, գծիկ և սկզբում՝ +
+  // Թույլատրվում են միայն թվանշաններ, բացատ, գծիկ և սկզբում՝ +, ընդամենը 8–15 թվանշան
   const PHONE_RE = /^\+?[0-9 -]+$/;
 
   function clean(value) {
@@ -50,7 +97,7 @@
     if (!EMAIL_RE.test(data.email) || data.email.length > 254) errors.email = MESSAGES.email;
 
     const digits = data.telephone.replace(/[^0-9]/g, "").length;
-    if (!PHONE_RE.test(data.telephone) || digits < 6 || digits > 15) errors.telephone = MESSAGES.telephone;
+    if (!PHONE_RE.test(data.telephone) || digits < 8 || digits > 15) errors.telephone = MESSAGES.telephone;
 
     if (data.password.length < 8) errors.password = MESSAGES.passwordShort;
     else if (byteLength(data.password) > 72) errors.password = MESSAGES.passwordLong;
@@ -69,7 +116,54 @@
     return { data, errors };
   }
 
-  const api = { MESSAGES, validateRegistration, validateLogin };
+  // now-ը փոխանցում ենք դրսից, որ «այսօր»-ը որոշվի նույն պահին ամբողջ ստուգման համար
+  function validateReservation(input, now) {
+    now = now || new Date();
+    const data = {
+      date: clean(input.date),
+      time: clean(input.time),
+      guests: Number(input.guests),
+      note: clean(input.note)
+    };
+    const errors = {};
+    const today = localDate(now);
+
+    // Ամսաթիվը համեմատում ենք որպես տեքստ. ՏՏՏՏ-ԱԱ-ՕՕ տեսքով դա ճիշտ է աշխատում
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date) || isNaN(new Date(data.date + "T00:00").getTime())) {
+      errors.date = MESSAGES.dateEmpty;
+    } else if (data.date < today) {
+      errors.date = MESSAGES.datePast;
+    } else if (data.date > localDate(addDays(now, BOOKING.maxDaysAhead))) {
+      errors.date = MESSAGES.dateFar;
+    }
+
+    if (!data.time) {
+      errors.time = MESSAGES.timeEmpty;
+    } else if (!TIME_SLOTS.includes(data.time)) {
+      errors.time = MESSAGES.timeClosed;
+    } else if (data.date === today && toMinutes(data.time) <= now.getHours() * 60 + now.getMinutes()) {
+      errors.time = MESSAGES.timePast;
+    }
+
+    if (!Number.isInteger(data.guests) || data.guests < 1 || data.guests > BOOKING.maxGuests) {
+      errors.guests = MESSAGES.guests;
+    }
+
+    if (data.note.length > BOOKING.maxNoteLength) errors.note = MESSAGES.noteLong;
+
+    return { data, errors };
+  }
+
+  const api = {
+    MESSAGES,
+    BOOKING,
+    TIME_SLOTS,
+    localDate,
+    addDays,
+    validateRegistration,
+    validateLogin,
+    validateReservation
+  };
 
   if (typeof module === "object" && module.exports) {
     module.exports = api;

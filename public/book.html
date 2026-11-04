@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ամրագրել սեղան · Tablebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/validation.js" defer></script>
+  <script src="/auth.js" defer></script>
+  <script src="/booking.js" defer></script>
+</head>
+<body class="page-book">
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <!-- Լոգո՝ սուրճի բաժակ -->
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Մուտք, գրանցում և թեմա">
+        <div class="auth-box" id="auth-guest">
+          <a class="nav-link" href="/login">Մուտք</a>
+          <a class="nav-link strong" href="/register">Գրանցվել</a>
+        </div>
+        <div class="auth-box" id="auth-user" hidden>
+          <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-reservations">Իմ ամրագրումները</a>
+          <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
+        </div>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <main class="auth-page">
+      <div class="auth-card">
+        <h1>Ամրագրել սեղան</h1>
+        <p class="lead">Ընտրեք օրը, ժամը և հյուրերի քանակը։ Սրճարանը կհաստատի ձեր ամրագրումը։</p>
+
+        <form class="book-form" novalidate>
+          <div class="field-row">
+            <div class="field">
+              <label for="book-date">Օր</label>
+              <input id="book-date" name="date" type="date" aria-describedby="date-error" required>
+              <p class="field-error" id="date-error"></p>
+            </div>
+            <div class="field">
+              <label for="book-time">Ժամ</label>
+              <select id="book-time" name="time" aria-describedby="time-error" required>
+                <option value="">Ընտրեք ժամը</option>
+              </select>
+              <p class="field-error" id="time-error"></p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="book-guests">Հյուրերի քանակ</label>
+            <input id="book-guests" name="guests" type="number" inputmode="numeric" min="1" max="12" value="2" aria-describedby="guests-error" required>
+            <p class="field-error" id="guests-error"></p>
+          </div>
+          <div class="field">
+            <label for="book-note">Նշում (ըստ ցանկության)</label>
+            <textarea id="book-note" name="note" rows="3" maxlength="300" aria-describedby="note-error" placeholder="Օրինակ՝ պատուհանի մոտ, մանկական աթոռ"></textarea>
+            <p class="field-error" id="note-error"></p>
+          </div>
+          <p class="field-error" id="form-error" role="alert"></p>
+          <button class="btn btn-primary" type="submit">Ամրագրել</button>
+        </form>
+
+        <p class="switch"><a href="/my-reservations">Իմ ամրագրումները</a></p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

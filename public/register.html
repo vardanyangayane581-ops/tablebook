@@ -12,7 +12,7 @@
   <script src="/validation.js" defer></script>
   <script src="/auth.js" defer></script>
 </head>
-<body>
+<body class="page-register">
   <div class="container">
     <header>
       <a class="logo" href="/">
@@ -32,6 +32,7 @@
         </div>
         <div class="auth-box" id="auth-user" hidden>
           <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-reservations">Իմ ամրագրումները</a>
           <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
         </div>
         <button id="theme-btn" type="button">Փոխել թեման</button>
@@ -54,7 +55,7 @@
             <p class="field-error" id="last_name-error"></p>
           </div>
           <div class="field">
-            <label for="reg-email">Էլ-փոստ</label>
+            <label for="reg-email">Էլ. փոստ</label>
             <input id="reg-email" name="email" type="email" aria-describedby="email-error" autocomplete="email" required>
             <p class="field-error" id="email-error"></p>
           </div>

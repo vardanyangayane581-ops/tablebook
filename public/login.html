@@ -12,7 +12,7 @@
   <script src="/validation.js" defer></script>
   <script src="/auth.js" defer></script>
 </head>
-<body>
+<body class="page-login">
   <div class="container">
     <header>
       <a class="logo" href="/">
@@ -32,6 +32,7 @@
         </div>
         <div class="auth-box" id="auth-user" hidden>
           <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-reservations">Իմ ամրագրումները</a>
           <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
         </div>
         <button id="theme-btn" type="button">Փոխել թեման</button>
@@ -44,7 +45,7 @@
 
         <form class="auth-form" data-mode="login" novalidate>
           <div class="field">
-            <label for="login-email">Էլ-փոստ</label>
+            <label for="login-email">Էլ. փոստ</label>
             <input id="login-email" name="email" type="email" aria-describedby="email-error" autocomplete="email" required autofocus>
             <p class="field-error" id="email-error"></p>
           </div>
@@ -54,10 +55,10 @@
             <p class="field-error" id="password-error"></p>
           </div>
           <p class="field-error" id="form-error" role="alert"></p>
-          <button class="btn btn-primary" type="submit">Մուտք գործել</button>
+          <button class="btn btn-primary" type="submit">Մուտք</button>
         </form>
 
-        <p class="switch">Դեռ հաշիվ չունե՞ք։ <a href="/register">Գրանցվել</a></p>
+        <p class="switch">Հաշիվ չունե՞ք։ <a href="/register">Գրանցվել</a></p>
       </div>
     </main>
   </div>
