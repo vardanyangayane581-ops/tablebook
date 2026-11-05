@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Ադմին վահանակ · Tablebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/cart-store.js" defer></script>
+  <script src="/admin.js" defer></script>
+</head>
+<body class="page-admin">
+  <div class="admin-shell">
+    <aside class="admin-side">
+      <a class="logo" href="/">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <p class="admin-badge">Ադմին վահանակ</p>
+      <nav class="admin-nav" aria-label="Վահանակի բաժիններ">
+        <button type="button" data-tab="overview" aria-current="page">📊 Ընդհանուր</button>
+        <button type="button" data-tab="orders">🧾 Պատվերներ <span class="pill" id="pending-pill" hidden></span></button>
+        <button type="button" data-tab="restaurants">🍽️ Ռեստորաններ</button>
+        <button type="button" data-tab="settings">✏️ Կայքի տեքստեր</button>
+      </nav>
+      <div class="admin-me">
+        <span id="admin-name"></span>
+        <button class="logout-btn" id="admin-logout" type="button">Դուրս գալ</button>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <!-- Ընդհանուր -->
+      <section class="admin-tab" id="tab-overview">
+        <h1>Բարի գալուստ, <span id="admin-first"></span> 👋</h1>
+        <p class="muted">Այստեղից կարող եք ավելացնել ռեստորաններ, փոխել մենյուները, հաստատել պատվերները և խմբագրել կայքի տեքստերը։</p>
+        <div class="stat-grid">
+          <div class="stat"><span>Ռեստորաններ</span><strong id="st-restaurants">–</strong></div>
+          <div class="stat"><span>Ուտեստներ</span><strong id="st-items">–</strong></div>
+          <div class="stat"><span>Հաճախորդներ</span><strong id="st-users">–</strong></div>
+          <div class="stat warm"><span>Սպասող պատվերներ</span><strong id="st-pending">–</strong></div>
+        </div>
+        <div class="quick-actions">
+          <button class="btn-pill primary" type="button" id="quick-add-restaurant">+ Ավելացնել ռեստորան</button>
+          <a class="btn-pill ghost" href="/restaurants" target="_blank" rel="noopener">Դիտել կայքը ↗</a>
+        </div>
+      </section>
+
+      <!-- Պատվերներ -->
+      <section class="admin-tab" id="tab-orders" hidden>
+        <div class="admin-head">
+          <h1>Երեկոյի ճաշացանկեր</h1>
+          <select id="order-filter" aria-label="Զտել ըստ կարգավիճակի">
+            <option value="">Բոլորը</option>
+            <option value="pending">Սպասում են</option>
+            <option value="confirmed">Հաստատված</option>
+            <option value="rejected">Մերժված</option>
+            <option value="cancelled">Չեղարկված</option>
+          </select>
+        </div>
+        <p class="empty-note" id="orders-empty" hidden>Պատվերներ դեռ չկան։</p>
+        <ul class="menu-orders" id="admin-orders"></ul>
+      </section>
+
+      <!-- Ռեստորաններ -->
+      <section class="admin-tab" id="tab-restaurants" hidden>
+        <div class="admin-head">
+          <h1>Ռեստորաններ</h1>
+          <button class="btn-pill primary" type="button" id="add-restaurant">+ Նոր ռեստորան</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Ռեստորան</th><th>Խոհանոց</th><th>Ուտեստ</th><th>Վարկանիշ</th><th>Կարգավիճակ</th><th><span class="visually-hidden">Գործողություններ</span></th></tr>
+            </thead>
+            <tbody id="restaurant-rows"></tbody>
+          </table>
+        </div>
+
+        <!-- Ընտրված ռեստորանի մենյու -->
+        <div class="menu-admin" id="menu-admin" hidden>
+          <div class="admin-head">
+            <h2>Մենյու՝ <span id="menu-admin-name"></span></h2>
+            <button class="btn-pill primary" type="button" id="add-item">+ Նոր ուտեստ</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Ուտեստ</th><th>Բաժին</th><th>Գին</th><th>Հասանելի</th><th><span class="visually-hidden">Գործողություններ</span></th></tr>
+              </thead>
+              <tbody id="item-rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Կայքի տեքստեր -->
+      <section class="admin-tab" id="tab-settings" hidden>
+        <h1>Կայքի տեքստեր</h1>
+        <p class="muted">Այս տեքստերը երևում են գլխավոր էջում։ Փոփոխությունները կիրառվում են անմիջապես։</p>
+        <form class="admin-form card" id="settings-form" novalidate>
+          <div class="field"><label for="s-eyebrow">Փոքր պիտակ վերնագրի վերևում</label><input id="s-eyebrow" name="hero_eyebrow" maxlength="300"><p class="field-error" id="hero_eyebrow-error"></p></div>
+          <div class="field"><label for="s-title">Գլխավոր վերնագիր</label><input id="s-title" name="hero_title" maxlength="300"><p class="field-error" id="hero_title-error"></p></div>
+          <div class="field"><label for="s-text">Վերնագրի տակի տեքստ</label><textarea id="s-text" name="hero_text" rows="3" maxlength="300"></textarea><p class="field-error" id="hero_text-error"></p></div>
+          <div class="field"><label for="s-ann">Հայտարարություն (դատարկ՝ չցուցադրել)</label><input id="s-ann" name="announcement" maxlength="300"><p class="field-error" id="announcement-error"></p></div>
+          <div class="field-row">
+            <div class="field"><label for="s-phone">Կոնտակտային հեռախոս</label><input id="s-phone" name="contact_phone" maxlength="300"><p class="field-error" id="contact_phone-error"></p></div>
+            <div class="field"><label for="s-email">Կոնտակտային էլ. փոստ</label><input id="s-email" name="contact_email" maxlength="300"><p class="field-error" id="contact_email-error"></p></div>
+          </div>
+          <p class="field-error" id="settings-form-error" role="alert"></p>
+          <button class="btn btn-primary" type="submit">Պահպանել</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- Ռեստորանի ձև -->
+  <dialog class="admin-dialog" id="restaurant-dialog" aria-labelledby="rd-title">
+    <form method="dialog" class="admin-form" id="restaurant-form" novalidate>
+      <h2 id="rd-title">Նոր ռեստորան</h2>
+      <div class="field"><label for="r-name-in">Անուն *</label><input id="r-name-in" name="name" maxlength="80" required><p class="field-error" id="r-name-error"></p></div>
+      <div class="field-row">
+        <div class="field"><label for="r-cuisine-in">Խոհանոց</label><input id="r-cuisine-in" name="cuisine" maxlength="60" placeholder="Օր.՝ Հայկական խոհանոց"><p class="field-error" id="r-cuisine-error"></p></div>
+        <div class="field"><label for="r-rating-in">Վարկանիշ (0–5)</label><input id="r-rating-in" name="rating" type="number" step="0.1" min="0" max="5" value="4.5"><p class="field-error" id="r-rating-error"></p></div>
+      </div>
+      <div class="field"><label for="r-desc-in">Նկարագրություն</label><textarea id="r-desc-in" name="description" rows="3" maxlength="400"></textarea><p class="field-error" id="r-description-error"></p></div>
+      <div class="field-row">
+        <div class="field"><label for="r-address-in">Հասցե</label><input id="r-address-in" name="address" maxlength="120"><p class="field-error" id="r-address-error"></p></div>
+        <div class="field"><label for="r-phone-in">Հեռախոս</label><input id="r-phone-in" name="phone" maxlength="30"><p class="field-error" id="r-phone-error"></p></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="r-hours-in">Աշխատանքային ժամեր</label><input id="r-hours-in" name="hours" maxlength="40" placeholder="12:00 – 23:00"><p class="field-error" id="r-hours-error"></p></div>
+        <div class="field"><label for="r-image-in">Նկար</label><select id="r-image-in" name="image"></select></div>
+      </div>
+      <label class="check"><input type="checkbox" name="is_active" checked> Ցուցադրել կայքում</label>
+      <p class="field-error" id="r-form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn-pill ghost" type="button" data-close>Չեղարկել</button>
+        <button class="btn-pill primary" type="submit">Պահպանել</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Ուտեստի ձև -->
+  <dialog class="admin-dialog" id="item-dialog" aria-labelledby="id-title">
+    <form method="dialog" class="admin-form" id="item-form" novalidate>
+      <h2 id="id-title">Նոր ուտեստ</h2>
+      <div class="field-row">
+        <div class="field"><label for="i-name-in">Անուն *</label><input id="i-name-in" name="name" maxlength="80" required><p class="field-error" id="i-name-error"></p></div>
+        <div class="field"><label for="i-emoji-in">Էմոջի</label><input id="i-emoji-in" name="emoji" maxlength="8" placeholder="🍲"><p class="field-error" id="i-emoji-error"></p></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="i-cat-in">Բաժին</label><select id="i-cat-in" name="category"></select><p class="field-error" id="i-category-error"></p></div>
+        <div class="field"><label for="i-price-in">Գին (֏) *</label><input id="i-price-in" name="price" type="number" min="0" step="100" required><p class="field-error" id="i-price-error"></p></div>
+      </div>
+      <div class="field"><label for="i-desc-in">Նկարագրություն</label><textarea id="i-desc-in" name="description" rows="2" maxlength="200"></textarea><p class="field-error" id="i-description-error"></p></div>
+      <label class="check"><input type="checkbox" name="is_available" checked> Հասանելի է պատվիրելու համար</label>
+      <p class="field-error" id="i-form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn-pill ghost" type="button" data-close>Չեղարկել</button>
+        <button class="btn-pill primary" type="submit">Պահպանել</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

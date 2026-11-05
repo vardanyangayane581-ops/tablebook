@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <script src="/theme.js"></script>
+  <script src="/cart-store.js" defer></script>
   <script src="/validation.js" defer></script>
   <script src="/auth.js" defer></script>
 </head>
@@ -25,14 +26,20 @@
         </svg>
         Tablebook
       </a>
-      <nav class="header-actions" aria-label="Մուտք, գրանցում և թեմա">
+      <nav class="header-actions" aria-label="Գլխավոր մենյու">
+        <a class="nav-link" href="/restaurants">Ռեստորաններ</a>
+        <a class="cart-link" href="/cart" aria-label="Զամբյուղ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>
+          <span class="cart-count" data-cart-count hidden>0</span>
+        </a>
         <div class="auth-box" id="auth-guest">
           <a class="nav-link" href="/login">Մուտք</a>
-          <a class="nav-link strong" href="/register" aria-current="page">Գրանցվել</a>
+          <a class="nav-link strong" href="/register">Գրանցվել</a>
         </div>
         <div class="auth-box" id="auth-user" hidden>
           <span class="hello" id="hello"></span>
-          <a class="nav-link" href="/my-reservations">Իմ ամրագրումները</a>
+          <a class="nav-link" href="/my-menus">Իմ ճաշացանկերը</a>
+          <a class="nav-link" href="/my-reservations">Ամրագրումներ</a>
           <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
         </div>
         <button id="theme-btn" type="button">Փոխել թեման</button>

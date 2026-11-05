@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Մենյու · Tablebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/cart-store.js" defer></script>
+  <script src="/auth.js" defer></script>
+  <script src="/menu.js" defer></script>
+</head>
+<body class="page-restaurant">
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Գլխավոր մենյու">
+        <a class="nav-link" href="/restaurants" aria-current="page">Ռեստորաններ</a>
+        <a class="cart-link" href="/cart" aria-label="Զամբյուղ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>
+          <span class="cart-count" data-cart-count hidden>0</span>
+        </a>
+        <div class="auth-box" id="auth-guest">
+          <a class="nav-link" href="/login">Մուտք</a>
+          <a class="nav-link strong" href="/register">Գրանցվել</a>
+        </div>
+        <div class="auth-box" id="auth-user" hidden>
+          <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-menus">Իմ ճաշացանկերը</a>
+          <a class="nav-link" href="/my-reservations">Ամրագրումներ</a>
+          <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
+        </div>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <main class="page-main">
+      <a class="back-link" href="/restaurants">← Բոլոր ռեստորանները</a>
+      <p class="field-error" id="form-error" role="alert"></p>
+
+      <section class="restaurant-hero" id="restaurant-hero" hidden>
+        <div class="restaurant-hero-text">
+          <span class="eyebrow" id="r-cuisine"></span>
+          <h1 id="r-name"></h1>
+          <p id="r-description"></p>
+          <ul class="r-facts">
+            <li><span aria-hidden="true">⭐</span> <span id="r-rating"></span></li>
+            <li><span aria-hidden="true">🕒</span> <span id="r-hours"></span></li>
+            <li><span aria-hidden="true">📍</span> <span id="r-address"></span></li>
+            <li><span aria-hidden="true">📞</span> <span id="r-phone"></span></li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="menu-layout" id="menu-layout" hidden>
+        <div>
+          <nav class="menu-tabs" id="menu-tabs" aria-label="Մենյուի բաժիններ"></nav>
+          <div id="menu-sections"></div>
+        </div>
+
+        <aside class="mini-cart" id="mini-cart" aria-label="Իմ ընտրությունը">
+          <h2>Իմ ընտրությունը</h2>
+          <p class="mini-cart-empty" id="mini-empty">Ավելացրեք ուտեստներ՝ «+» կոճակով։</p>
+          <ul class="mini-list" id="mini-list"></ul>
+          <div class="mini-total" id="mini-total-row" hidden>
+            <span>Ընդամենը</span>
+            <strong id="mini-total"></strong>
+          </div>
+          <a class="btn-pill primary block" id="to-cart" href="/cart" hidden>Կազմել ճաշացանկը →</a>
+          <p class="mini-other" id="mini-other" hidden></p>
+        </aside>
+      </div>
+    </main>
+
+    <footer>© 2026 Tablebook։ Բոլոր տվյալները օրինակային են։</footer>
+  </div>
+</body>
+</html>

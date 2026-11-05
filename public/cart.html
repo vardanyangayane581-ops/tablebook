@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Զամբյուղ · Tablebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/cart-store.js" defer></script>
+  <script src="/validation.js" defer></script>
+  <script src="/auth.js" defer></script>
+  <script src="/menu.js" defer></script>
+</head>
+<body class="page-cart">
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Գլխավոր մենյու">
+        <a class="nav-link" href="/restaurants">Ռեստորաններ</a>
+        <a class="cart-link" href="/cart" aria-label="Զամբյուղ" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>
+          <span class="cart-count" data-cart-count hidden>0</span>
+        </a>
+        <div class="auth-box" id="auth-guest">
+          <a class="nav-link" href="/login">Մուտք</a>
+          <a class="nav-link strong" href="/register">Գրանցվել</a>
+        </div>
+        <div class="auth-box" id="auth-user" hidden>
+          <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-menus">Իմ ճաշացանկերը</a>
+          <a class="nav-link" href="/my-reservations">Ամրագրումներ</a>
+          <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
+        </div>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <main class="page-main">
+      <div class="page-intro">
+        <span class="eyebrow">🛒 Զամբյուղ</span>
+        <h1>Երեկոյի ճաշացանկ</h1>
+        <p id="cart-sub">Ստուգեք ընտրած ուտեստները, ընտրեք օրը և ժամը, և ռեստորանը կպատրաստի ամեն ինչ ձեր գալուն։</p>
+      </div>
+
+      <div class="empty" id="cart-empty" hidden>
+        <p class="empty-emoji" aria-hidden="true">🍽️</p>
+        <p>Զամբյուղը դատարկ է։</p>
+        <a class="btn-pill primary" href="/restaurants">Ընտրել ռեստորան</a>
+      </div>
+
+      <div class="cart-layout" id="cart-layout" hidden>
+        <section class="evening-menu" aria-labelledby="em-title">
+          <div class="em-head">
+            <div>
+              <p class="em-kicker">Ճաշացանկ</p>
+              <h2 id="em-title"></h2>
+            </div>
+            <button class="link-btn" id="clear-cart" type="button">Մաքրել</button>
+          </div>
+          <div id="cart-sections"></div>
+          <a class="add-more" id="add-more" href="/restaurants">+ Ավելացնել ուտեստներ</a>
+        </section>
+
+        <aside class="checkout card">
+          <h2>Ամրագրել այս երեկոն</h2>
+          <form class="book-form" id="checkout-form" novalidate>
+            <div class="field-row">
+              <div class="field">
+                <label for="c-date">Օր</label>
+                <input id="c-date" name="date" type="date" required>
+                <p class="field-error" id="date-error"></p>
+              </div>
+              <div class="field">
+                <label for="c-time">Ժամ</label>
+                <select id="c-time" name="time" required>
+                  <option value="">Ընտրեք</option>
+                </select>
+                <p class="field-error" id="time-error"></p>
+              </div>
+            </div>
+            <div class="field">
+              <label for="c-guests">Հյուրերի քանակ</label>
+              <input id="c-guests" name="guests" type="number" inputmode="numeric" min="1" max="12" value="2" required>
+              <p class="field-error" id="guests-error"></p>
+            </div>
+            <div class="field">
+              <label for="c-note">Նշում (ըստ ցանկության)</label>
+              <textarea id="c-note" name="note" rows="2" maxlength="300" placeholder="Օրինակ՝ ծննդյան տարեդարձ, առանց ընկույզի"></textarea>
+              <p class="field-error" id="note-error"></p>
+            </div>
+
+            <dl class="summary">
+              <div><dt>Ուտեստներ</dt><dd id="sum-count"></dd></div>
+              <div><dt>Մեկ հյուրին մոտավորապես</dt><dd id="sum-per"></dd></div>
+              <div class="sum-total"><dt>Ընդամենը</dt><dd id="sum-total"></dd></div>
+            </dl>
+
+            <p class="field-error" id="form-error" role="alert"></p>
+            <button class="btn btn-primary" type="submit" id="checkout-btn">Հաստատել ճաշացանկը</button>
+            <p class="hint" id="login-hint" hidden>Հաստատելու համար անհրաժեշտ է <a href="/login?next=/cart">մուտք գործել</a>։ Զամբյուղը կպահպանվի։</p>
+          </form>
+        </aside>
+      </div>
+    </main>
+
+    <footer>© 2026 Tablebook։ Բոլոր տվյալները օրինակային են։</footer>
+  </div>
+</body>
+</html>

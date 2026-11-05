@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Ադմին վահանակ · Մուտք</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+</head>
+<body class="page-admin-login">
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Թեմա">
+        <a class="nav-link" href="/">← Կայք</a>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <main class="auth-page">
+      <div class="auth-card admin-card">
+        <div class="lock" aria-hidden="true">🔐</div>
+        <h1>Ադմին վահանակ</h1>
+        <p class="lead">Մուտքը թույլատրված է միայն կայքի գրանցված աշխատողին։</p>
+
+        <form class="auth-form" id="admin-login-form" novalidate>
+          <div class="field">
+            <label for="admin-email">Աշխատողի էլ. փոստ</label>
+            <input id="admin-email" name="email" type="email" autocomplete="username" required autofocus>
+          </div>
+          <div class="field">
+            <label for="admin-password">Գաղտնաբառ</label>
+            <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <p class="field-error" id="form-error" role="alert"></p>
+          <button class="btn btn-primary" type="submit">Մուտք վահանակ</button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Օտար անձի փորձի դեպքում ներքևում ցույց ենք տալիս արգելքի հաղորդագրությունը -->
+    <div class="denied-banner" id="denied-banner" role="alert" hidden>
+      <span aria-hidden="true">⛔</span>
+      <div>
+        <strong>Մուտքը մերժված է</strong>
+        <p>Տվյալ անձը չի կարող մուտք գործել ադմին վահանակ։ Մուտքը հասանելի է միայն կայքի գրանցված աշխատողին։</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById("admin-login-form");
+      const errorBox = document.getElementById("form-error");
+      const banner = document.getElementById("denied-banner");
+
+      // Եթե աշխատողն արդեն մուտք է գործել, անմիջապես բացում ենք վահանակը
+      fetch("/api/admin/me").then(function (r) { return r.json(); }).then(function (b) {
+        if (b.admin) window.location.href = "/admin";
+      }).catch(function () {});
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        errorBox.textContent = "";
+        banner.hidden = true;
+        const input = Object.fromEntries(new FormData(form));
+        if (!input.email.trim() || !input.password) {
+          errorBox.textContent = "Լրացրեք էլ. փոստը և գաղտնաբառը";
+          return;
+        }
+        const button = form.querySelector("button");
+        button.disabled = true;
+        try {
+          const res = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(input)
+          });
+          const body = await res.json().catch(function () { return {}; });
+          if (res.ok) {
+            window.location.href = "/admin";
+            return;
+          }
+          errorBox.textContent = "Սխալ․ " + ((body.errors && body.errors.form) || "մուտքը մերժված է");
+          if (body.denied) {
+            banner.hidden = false;
+            form.elements.password.value = "";
+          }
+        } catch (e) {
+          errorBox.textContent = "Սերվերը հասանելի չէ։";
+        }
+        button.disabled = false;
+      });
+    })();
+  </script>
+</body>
+</html>

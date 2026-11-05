@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <script src="/theme.js"></script>
+  <script src="/cart-store.js" defer></script>
   <script src="/auth.js" defer></script>
 </head>
 <body class="page-home">
@@ -24,14 +25,20 @@
         </svg>
         Tablebook
       </a>
-      <nav class="header-actions" aria-label="Մուտք, գրանցում և թեմա">
+      <nav class="header-actions" aria-label="Գլխավոր մենյու">
+        <a class="nav-link" href="/restaurants">Ռեստորաններ</a>
+        <a class="cart-link" href="/cart" aria-label="Զամբյուղ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>
+          <span class="cart-count" data-cart-count hidden>0</span>
+        </a>
         <div class="auth-box" id="auth-guest">
           <a class="nav-link" href="/login">Մուտք</a>
           <a class="nav-link strong" href="/register">Գրանցվել</a>
         </div>
         <div class="auth-box" id="auth-user" hidden>
           <span class="hello" id="hello"></span>
-          <a class="nav-link" href="/my-reservations">Իմ ամրագրումները</a>
+          <a class="nav-link" href="/my-menus">Իմ ճաշացանկերը</a>
+          <a class="nav-link" href="/my-reservations">Ամրագրումներ</a>
           <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
         </div>
         <button id="theme-btn" type="button">Փոխել թեման</button>
@@ -40,12 +47,12 @@
 
     <div class="hero">
       <div>
-        <span class="eyebrow">☕ Սուրճ, թխվածք և ազատ սեղան</span>
-        <h1>Սեղանի ամրագրում <span class="hl">փոքր սրճարանների</span> համար</h1>
-        <p>Պարզ և արագ ամրագրումներ՝ առանց զանգերի և թղթերի։</p>
+        <span class="eyebrow" id="hero-eyebrow">🍷 Սեղան, ճաշացանկ և լավ երեկո</span>
+        <h1 id="hero-title">Ամրագրեք սեղան և կազմեք ձեր <span class="hl">երեկոյի ճաշացանկը</span></h1>
+        <p id="hero-text">Ընտրեք ռեստորանը, ծանոթացեք մենյուին, ավելացրեք սիրելի ուտեստները զամբյուղ և ամրագրեք մեկ քայլով։</p>
         <div class="hero-actions">
-          <a class="btn-pill primary" href="/book">Ամրագրել սեղան</a>
-          <a class="btn-pill ghost" href="#how">Ինչպես է աշխատում</a>
+          <a class="btn-pill primary" href="/restaurants">Դիտել ռեստորանները</a>
+          <a class="btn-pill ghost" href="/book">Ամրագրել սեղան</a>
         </div>
       </div>
 
@@ -112,6 +119,17 @@
         </g>
       </svg>
     </div>
+
+    <p class="announcement" id="announcement" hidden></p>
+
+    <!-- Լավագույն ռեստորանները (բեռնվում են սերվերից) -->
+    <section aria-labelledby="featured-title">
+      <div class="section-head">
+        <h2 id="featured-title">Լավագույն ռեստորանները</h2>
+        <a class="see-all" href="/restaurants">Բոլորը →</a>
+      </div>
+      <div class="restaurant-grid" id="featured"></div>
+    </section>
 
     <!-- Սրճարանի մթնոլորտ՝ երեք նկար -->
     <section class="moments" aria-labelledby="moments-title">
@@ -298,7 +316,9 @@
           <ellipse cx="50" cy="10" rx="7" ry="5" transform="rotate(25 50 10)"/>
         </g>
       </svg>
-      © 2026 Tablebook։ Ստեղծված է փոքր սրճարանների համար։
+      <span id="contacts"></span>
+      © 2026 Tablebook։ Բոլոր տվյալները օրինակային են։
+      <a class="staff-link" href="/admin-login">Աշխատողի մուտք</a>
     </footer>
   </div>
 
@@ -307,14 +327,14 @@
     const features = [
       { name: "Սեղանի ամրագրում", description: "Հյուրը ընտրում է օրը, ժամը և հյուրերի քանակը", ready: true },
       { name: "Մուգ և բաց թեմա", description: "Էջի թեման փոխվում է մեկ կոճակով", ready: true },
-      { name: "Ամրագրման հաստատում", description: "Սրճարանը հաստատում կամ մերժում է նոր ամրագրումը", ready: false },
+      { name: "Ռեստորանների ցանկ և մենյու", description: "Հյուրը ծանոթանում է ռեստորաններին և նրանց մենյուին", ready: true },
+      { name: "Զամբյուղ և երեկոյի ճաշացանկ", description: "Ուտեստները ավելացվում են զամբյուղ և պատվիրվում մեկ քայլով", ready: true },
+      { name: "Ադմին վահանակ", description: "Աշխատողը ավելացնում է ռեստորաններ, մենյու և հաստատում պատվերները", ready: true },
       { name: "Հաղորդագրություն հյուրին", description: "Հյուրը ստանում է SMS կամ email հաստատում", ready: false },
       { name: "Սեղանների քարտեզ", description: "Սրճարանի սրահի սխեման՝ ազատ և զբաղված սեղաններով", ready: false },
       { name: "Վիճակագրություն տիրոջ համար", description: "Ամրագրումների քանակը ըստ օրերի և ժամերի", ready: false }
     ];
 
-    let տարիք = 18;
-    let անուններ = ["Գագիկ", "Դանիել", "Հենրի", "Գայանե"];
 
     // Վերադարձնում է պատրաստ հնարավորությունների քանակը
     function countReady(list) {
@@ -364,6 +384,45 @@
     requestAnimationFrame(function () {
       document.getElementById("progress-bar").style.width = (ready / features.length * 100) + "%";
     });
+
+    // Կայքի տեքստերը (ադմինը կարող է փոխել) և լավագույն ռեստորանները
+    fetch("/api/site").then(function (r) { return r.json(); }).then(function (b) {
+      const s = b.settings || {};
+      if (s.hero_eyebrow) document.getElementById("hero-eyebrow").textContent = s.hero_eyebrow;
+      if (s.hero_title) document.getElementById("hero-title").textContent = s.hero_title;
+      if (s.hero_text) document.getElementById("hero-text").textContent = s.hero_text;
+      const ann = document.getElementById("announcement");
+      ann.textContent = s.announcement || "";
+      ann.hidden = !s.announcement;
+      document.getElementById("contacts").textContent = "📞 " + s.contact_phone + " · ✉️ " + s.contact_email;
+    }).catch(function () {});
+
+    fetch("/api/restaurants").then(function (r) { return r.json(); }).then(function (b) {
+      const box = document.getElementById("featured");
+      for (const r of (b.restaurants || []).slice(0, 3)) {
+        const a = document.createElement("a");
+        a.className = "restaurant-card";
+        a.href = "/restaurant?id=" + r.id;
+        const cover = document.createElement("div");
+        cover.className = "rc-cover";
+        cover.style.backgroundImage = "url('/img/" + r.image + "')";
+        const rating = document.createElement("span");
+        rating.className = "rc-rating";
+        rating.textContent = "⭐ " + r.rating.toFixed(1);
+        cover.append(rating);
+        const body = document.createElement("div");
+        body.className = "rc-body";
+        const parts = [["span", "rc-cuisine", r.cuisine], ["h3", "rc-name", r.name], ["p", "rc-desc", r.description], ["span", "rc-cta", "Դիտել մենյուն →"]];
+        for (const [tag, cls, text] of parts) {
+          const n = document.createElement(tag);
+          n.className = cls;
+          n.textContent = text;
+          body.append(n);
+        }
+        a.append(cover, body);
+        box.append(a);
+      }
+    }).catch(function () {});
   </script>
 </body>
 </html>

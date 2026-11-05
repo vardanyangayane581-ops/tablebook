@@ -58,6 +58,7 @@ function openDatabase() {
 }
 
 const db = openDatabase();
+require("./db/seed.js").seedDatabase(db);
 
 // Բոլոր հարցումները պարամետրացված են (?), արժեքները երբեք չեն միացվում տեքստին
 const insertUser = db.prepare(
@@ -256,6 +257,9 @@ app.post("/api/reservations/:id/cancel", requireUser, (req, res) => {
   cancelReservationById.run(id, req.session.userId);
   res.json({ reservation: publicReservation(findReservation.get(id, req.session.userId)) });
 });
+
+// Ռեստորաններ, մենյու, զամբյուղից պատվերներ և ադմին վահանակ
+require("./restaurants.js")(app, db, { requireUser, startSession });
 
 // Չգտնված API երթուղի
 app.use("/api", (req, res) => {
