@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="/style.css">
   <script src="/theme.js"></script>
   <script src="/cart-store.js" defer></script>
+  <script src="/validation.js" defer></script>
+  <script src="/fields.js" defer></script>
+  <script src="/time-picker.js" defer></script>
   <script src="/admin.js" defer></script>
 </head>
 <body class="page-admin">
@@ -28,7 +31,8 @@
       <p class="admin-badge">Ադմին վահանակ</p>
       <nav class="admin-nav" aria-label="Վահանակի բաժիններ">
         <button type="button" data-tab="overview" aria-current="page">📊 Ընդհանուր</button>
-        <button type="button" data-tab="orders">🧾 Պատվերներ <span class="pill" id="pending-pill" hidden></span></button>
+        <button type="button" data-tab="orders">🧾 Ամրագրումներ <span class="pill" id="pending-pill" hidden></span></button>
+        <button type="button" data-tab="tables">🪑 Սեղաններ</button>
         <button type="button" data-tab="restaurants">🍽️ Ռեստորաններ</button>
         <button type="button" data-tab="settings">✏️ Կայքի տեքստեր</button>
       </nav>
@@ -48,7 +52,7 @@
           <div class="stat"><span>Ռեստորաններ</span><strong id="st-restaurants">–</strong></div>
           <div class="stat"><span>Ուտեստներ</span><strong id="st-items">–</strong></div>
           <div class="stat"><span>Հաճախորդներ</span><strong id="st-users">–</strong></div>
-          <div class="stat warm"><span>Սպասող պատվերներ</span><strong id="st-pending">–</strong></div>
+          <div class="stat warm"><span>Սպասող ամրագրումներ</span><strong id="st-pending">–</strong></div>
         </div>
         <div class="quick-actions">
           <button class="btn-pill primary" type="button" id="quick-add-restaurant">+ Ավելացնել ռեստորան</button>
@@ -59,17 +63,41 @@
       <!-- Պատվերներ -->
       <section class="admin-tab" id="tab-orders" hidden>
         <div class="admin-head">
-          <h1>Երեկոյի ճաշացանկեր</h1>
-          <select id="order-filter" aria-label="Զտել ըստ կարգավիճակի">
-            <option value="">Բոլորը</option>
-            <option value="pending">Սպասում են</option>
-            <option value="confirmed">Հաստատված</option>
-            <option value="rejected">Մերժված</option>
-            <option value="cancelled">Չեղարկված</option>
-          </select>
+          <h1>Ամրագրումներ</h1>
+          <div class="filters">
+            <select id="kind-filter" aria-label="Զտել ըստ տեսակի">
+              <option value="">Բոլոր տեսակները</option>
+              <option value="table">🪑 Միայն սեղան</option>
+              <option value="menu">🍽️ Մենյուով</option>
+            </select>
+            <select id="order-filter" aria-label="Զտել ըստ կարգավիճակի">
+              <option value="">Բոլոր կարգավիճակները</option>
+              <option value="pending">Սպասում են</option>
+              <option value="confirmed">Հաստատված</option>
+              <option value="rejected">Մերժված</option>
+              <option value="cancelled">Չեղարկված</option>
+            </select>
+          </div>
         </div>
-        <p class="empty-note" id="orders-empty" hidden>Պատվերներ դեռ չկան։</p>
+        <p class="empty-note" id="orders-empty" hidden>Ամրագրումներ դեռ չկան։</p>
         <ul class="menu-orders" id="admin-orders"></ul>
+      </section>
+
+      <!-- Սեղաններ -->
+      <section class="admin-tab" id="tab-tables" hidden>
+        <div class="admin-head">
+          <h1>Սեղաններ</h1>
+          <button class="btn-pill primary" type="button" id="add-table">+ Նոր սեղան</button>
+        </div>
+        <p class="muted">Հաճախորդը ամրագրելիս ընտրում է այս սեղաններից։ Նույն սեղանը կարելի է նորից ամրագրել նախորդ ամրագրումից առնվազն 1 ժամ հետո։</p>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Սեղան</th><th>Տեղեր</th><th>Ցուցադրել</th><th><span class="visually-hidden">Գործողություններ</span></th></tr>
+            </thead>
+            <tbody id="table-rows"></tbody>
+          </table>
+        </div>
       </section>
 
       <!-- Ռեստորաններ -->
@@ -131,7 +159,7 @@
       <div class="field"><label for="r-name-in">Անուն *</label><input id="r-name-in" name="name" maxlength="80" required><p class="field-error" id="r-name-error"></p></div>
       <div class="field-row">
         <div class="field"><label for="r-cuisine-in">Խոհանոց</label><input id="r-cuisine-in" name="cuisine" maxlength="60" placeholder="Օր.՝ Հայկական խոհանոց"><p class="field-error" id="r-cuisine-error"></p></div>
-        <div class="field"><label for="r-rating-in">Վարկանիշ (0–5)</label><input id="r-rating-in" name="rating" type="number" step="0.1" min="0" max="5" value="4.5"><p class="field-error" id="r-rating-error"></p></div>
+        <div class="field"><label for="r-rating-in">Վարկանիշ (0–5)</label><input id="r-rating-in" name="rating" type="text" inputmode="decimal" maxlength="3" autocomplete="off" data-decimal value="4.5"><p class="field-error" id="r-rating-error"></p></div>
       </div>
       <div class="field"><label for="r-desc-in">Նկարագրություն</label><textarea id="r-desc-in" name="description" rows="3" maxlength="400"></textarea><p class="field-error" id="r-description-error"></p></div>
       <div class="field-row">
@@ -151,6 +179,46 @@
     </form>
   </dialog>
 
+  <!-- Ժամի փոփոխություն -->
+  <dialog class="admin-dialog" id="move-dialog" aria-labelledby="mv-title">
+    <form method="dialog" class="admin-form" id="move-form" novalidate>
+      <h2 id="mv-title">🕒 Փոխել ամրագրման ժամը</h2>
+      <p class="muted" id="mv-who"></p>
+      <div class="field-row">
+        <div class="field"><label for="mv-date">Օր</label><input id="mv-date" name="date" type="date" required><p class="field-error" id="mv-date-error"></p></div>
+        <div class="field" id="mv-table-field"><label for="mv-table">Սեղան</label><select id="mv-table" name="table_id"></select><p class="field-error" id="mv-table_id-error"></p></div>
+      </div>
+      <div class="field">
+        <span class="field-label" id="mv-time-label">Ժամ</span>
+        <div class="time-grid" id="mv-time" role="radiogroup" aria-labelledby="mv-time-label"></div>
+        <p class="time-legend"><span class="dot free"></span> ազատ <span class="dot busy"></span> ամրագրված</p>
+        <p class="field-error" id="mv-time-error"></p>
+      </div>
+      <p class="field-error" id="mv-form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn-pill ghost" type="button" data-close>Չեղարկել</button>
+        <button class="btn-pill primary" type="submit">Պահպանել</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Սեղանի ձև -->
+  <dialog class="admin-dialog" id="table-dialog" aria-labelledby="td-title">
+    <form method="dialog" class="admin-form" id="table-form" novalidate>
+      <h2 id="td-title">Նոր սեղան</h2>
+      <div class="field-row">
+        <div class="field"><label for="t-name-in">Անուն *</label><input id="t-name-in" name="name" maxlength="60" placeholder="Օր.՝ Սեղան 7 · տեռաս" required><p class="field-error" id="t-name-error"></p></div>
+        <div class="field"><label for="t-seats-in">Տեղերի քանակ *</label><input id="t-seats-in" name="seats" type="text" inputmode="numeric" maxlength="2" autocomplete="off" data-digits value="4" required><p class="field-error" id="t-seats-error"></p></div>
+      </div>
+      <label class="check"><input type="checkbox" name="is_active" checked> Ցուցադրել ամրագրման էջում</label>
+      <p class="field-error" id="t-form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn-pill ghost" type="button" data-close>Չեղարկել</button>
+        <button class="btn-pill primary" type="submit">Պահպանել</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- Ուտեստի ձև -->
   <dialog class="admin-dialog" id="item-dialog" aria-labelledby="id-title">
     <form method="dialog" class="admin-form" id="item-form" novalidate>
@@ -161,7 +229,7 @@
       </div>
       <div class="field-row">
         <div class="field"><label for="i-cat-in">Բաժին</label><select id="i-cat-in" name="category"></select><p class="field-error" id="i-category-error"></p></div>
-        <div class="field"><label for="i-price-in">Գին (֏) *</label><input id="i-price-in" name="price" type="number" min="0" step="100" required><p class="field-error" id="i-price-error"></p></div>
+        <div class="field"><label for="i-price-in">Գին (֏) *</label><input id="i-price-in" name="price" type="text" inputmode="numeric" maxlength="7" autocomplete="off" data-digits required><p class="field-error" id="i-price-error"></p></div>
       </div>
       <div class="field"><label for="i-desc-in">Նկարագրություն</label><textarea id="i-desc-in" name="description" rows="2" maxlength="200"></textarea><p class="field-error" id="i-description-error"></p></div>
       <label class="check"><input type="checkbox" name="is_available" checked> Հասանելի է պատվիրելու համար</label>

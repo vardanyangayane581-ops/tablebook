@@ -12,6 +12,8 @@
   <script src="/cart-store.js" defer></script>
   <script src="/validation.js" defer></script>
   <script src="/auth.js" defer></script>
+  <script src="/fields.js" defer></script>
+  <script src="/time-picker.js" defer></script>
   <script src="/booking.js" defer></script>
 </head>
 <body class="page-book">
@@ -60,17 +62,21 @@
               <p class="field-error" id="date-error"></p>
             </div>
             <div class="field">
-              <label for="book-time">Ժամ</label>
-              <select id="book-time" name="time" aria-describedby="time-error" required>
-                <option value="">Ընտրեք ժամը</option>
-              </select>
-              <p class="field-error" id="time-error"></p>
+              <label for="book-guests">Հյուրերի քանակ</label>
+              <input id="book-guests" name="guests" type="text" inputmode="numeric" maxlength="2" autocomplete="off" data-digits value="2" aria-describedby="guests-error" required>
+              <p class="field-error" id="guests-error"></p>
             </div>
           </div>
           <div class="field">
-            <label for="book-guests">Հյուրերի քանակ</label>
-            <input id="book-guests" name="guests" type="number" inputmode="numeric" min="1" max="12" value="2" aria-describedby="guests-error" required>
-            <p class="field-error" id="guests-error"></p>
+            <label for="book-table">Սեղան</label>
+            <select id="book-table" name="table_id" aria-describedby="table_id-error" required></select>
+            <p class="field-error" id="table_id-error"></p>
+          </div>
+          <div class="field">
+            <span class="field-label" id="book-time-label">Ժամ</span>
+            <div class="time-grid" id="book-time" role="radiogroup" aria-labelledby="book-time-label" aria-describedby="time-error"></div>
+            <p class="time-legend"><span class="dot free"></span> ազատ <span class="dot busy"></span> ամրագրված (նույն սեղանը՝ 1 ժամ ընդմիջումով)</p>
+            <p class="field-error" id="time-error"></p>
           </div>
           <div class="field">
             <label for="book-note">Նշում (ըստ ցանկության)</label>

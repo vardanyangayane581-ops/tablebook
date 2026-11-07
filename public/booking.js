@@ -46,36 +46,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // ---------- Ամրագրման ձև ----------
 
   if (form) {
-    const dateInput = form.elements.date;
-    const timeSelect = form.elements.time;
-
-    const now = new Date();
-    const today = V.localDate(now);
-    dateInput.min = today;
-    dateInput.max = V.localDate(V.addDays(now, V.BOOKING.maxDaysAhead));
-    dateInput.value = today;
-
-    for (const slot of V.TIME_SLOTS) {
-      const option = document.createElement("option");
-      option.value = slot;
-      option.textContent = slot;
-      timeSelect.append(option);
-    }
-
-    // Այսօրվա համար անցած ժամերը անջատում ենք
-    function updateSlots() {
-      const current = new Date();
-      const isToday = dateInput.value === V.localDate(current);
-      const nowMinutes = current.getHours() * 60 + current.getMinutes();
-      for (const option of timeSelect.options) {
-        if (!option.value) continue;
-        const minutes = Number(option.value.slice(0, 2)) * 60 + Number(option.value.slice(3, 5));
-        option.disabled = isToday && minutes <= nowMinutes;
-      }
-      if (timeSelect.selectedOptions[0] && timeSelect.selectedOptions[0].disabled) timeSelect.value = "";
-    }
-    updateSlots();
-    dateInput.addEventListener("change", updateSlots);
+    // Անցած ժամերը չեն ցուցադրվում, իսկ ընտրված սեղանի զբաղված ժամերը անջատված են
+    window.TablebookTimePicker.connect({
+      dateInput: form.elements.date,
+      tableSelect: form.elements.table_id,
+      grid: document.getElementById("book-time"),
+      guests: form.elements.guests
+    });
 
     function showErrors(errors) {
       for (const box of form.querySelectorAll(".field-error")) box.textContent = "";
@@ -85,8 +62,9 @@ document.addEventListener("DOMContentLoaded", function () {
       for (const name in errors) {
         const box = document.getElementById(name + "-error");
         if (box) box.textContent = errors[name];
+        // Ժամը կոճակների խումբ է (RadioNodeList), նրան ընդգծում ենք CSS-ով՝ սխալի տեքստի կողքին
         const el = form.elements[name];
-        if (el) {
+        if (el && el.setAttribute) {
           el.setAttribute("aria-invalid", "true");
           if (!firstInvalid) firstInvalid = el;
         }
@@ -105,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const input = Object.fromEntries(new FormData(form));
 
       const check = V.validateReservation(input, new Date());
+      if (!input.table_id) check.errors.table_id = V.MESSAGES.tableEmpty;
       if (Object.keys(check.errors).length > 0) {
         showErrors(check.errors);
         return;
@@ -182,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const info = document.createElement("div");
       info.className = "res-info";
       const guests = document.createElement("span");
-      guests.textContent = "👥 " + r.guests + " հյուր";
+      guests.textContent = "👥 " + r.guests + " հյուր" + (r.table_name ? " · 🪑 " + r.table_name : "");
       const status = document.createElement("span");
       status.className = "status res-" + r.status;
       status.textContent = STATUS_TEXT[r.status] || r.status;
@@ -198,16 +177,89 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const canCancel = (r.status === "pending" || r.status === "confirmed") && r.date >= today;
       if (canCancel) {
+        const actions = document.createElement("div");
+        actions.className = "res-actions";
+        const move = document.createElement("button");
+        move.type = "button";
+        move.className = "btn-pill ghost small";
+        move.textContent = "🕒 Փոխել ժամը";
+        move.addEventListener("click", function () { openMove(r); });
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "logout-btn res-cancel";
         btn.textContent = "Չեղարկել";
         btn.addEventListener("click", function () { cancel(r, btn); });
-        li.append(btn);
+        actions.append(move, btn);
+        li.append(actions);
       }
 
       list.append(li);
     }
+  }
+
+  // ---------- Ժամի փոփոխություն ----------
+
+  const moveDialog = document.getElementById("move-dialog");
+  const moveForm = document.getElementById("move-form");
+  let moving = null;
+  let picker = null;
+
+  function moveErrors(errors) {
+    for (const box of moveForm.querySelectorAll(".field-error")) box.textContent = "";
+    for (const name in errors) {
+      const box = document.getElementById("m-" + name + "-error");
+      if (box) box.textContent = errors[name];
+    }
+  }
+
+  function openMove(r) {
+    moving = r;
+    moveErrors({});
+    const values = { date: r.date, time: r.time, tableId: r.table_id, guests: r.guests, exclude: r.id };
+    if (!picker) {
+      picker = window.TablebookTimePicker.connect(Object.assign({
+        dateInput: moveForm.elements.date,
+        tableSelect: moveForm.elements.table_id,
+        grid: document.getElementById("m-time")
+      }, values));
+    } else {
+      picker.set(values);
+    }
+    moveDialog.showModal();
+  }
+
+  if (moveForm) {
+    for (const btn of moveForm.querySelectorAll("[data-close]")) {
+      btn.addEventListener("click", function () { moveDialog.close(); });
+    }
+    moveForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const input = Object.fromEntries(new FormData(moveForm));
+      if (!input.time) return moveErrors({ time: V.MESSAGES.timeEmpty });
+      const button = moveForm.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const res = await fetch("/api/reservations/" + moving.id + "/move", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input)
+        });
+        if (res.status === 401) return goToLogin();
+        const body = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          moveErrors(body.errors || { form: V.MESSAGES.serverError });
+        } else {
+          moveDialog.close();
+          const notice = document.getElementById("notice");
+          notice.textContent = "✅ Ժամը փոխվեց։ Ամրագրումը նորից սպասում է սրճարանի հաստատմանը։";
+          notice.hidden = false;
+          loadReservations();
+        }
+      } catch (e) {
+        moveErrors({ form: V.MESSAGES.serverDown });
+      }
+      button.disabled = false;
+    });
   }
 
   async function cancel(reservation, btn) {

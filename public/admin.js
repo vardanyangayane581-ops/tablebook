@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (name === "overview") loadOverview();
     if (name === "orders") loadOrders();
+    if (name === "tables") loadTables();
     if (name === "restaurants") loadRestaurants();
     if (name === "settings") loadSettings();
     try { sessionStorage.setItem("admin-tab", name); } catch (e) {}
@@ -97,58 +98,219 @@ document.addEventListener("DOMContentLoaded", function () {
     openRestaurantDialog(null);
   });
 
-  // ---------- Պատվերներ ----------
+  // ---------- Ամրագրումներ (սեղան առանց մենյուի + մենյուով) ----------
 
   const orderFilter = document.getElementById("order-filter");
+  const kindFilter = document.getElementById("kind-filter");
   orderFilter.addEventListener("change", loadOrders);
+  kindFilter.addEventListener("change", loadOrders);
+
+  // Ամեն տեսակի իր API հասցեն
+  function baseUrl(entry) {
+    return entry.kind === "menu" ? "/api/admin/evening-menus/" : "/api/admin/reservations/";
+  }
 
   async function loadOrders() {
-    const res = await api("/api/admin/evening-menus");
+    const [menusRes, tablesRes] = await Promise.all([api("/api/admin/evening-menus"), api("/api/admin/reservations")]);
+    const all = (menusRes.data.menus || []).map(function (m) { return Object.assign({ kind: "menu" }, m); })
+      .concat(tablesRes.data.reservations || []);
+
+    // Սպասողները՝ վերևում, հետո՝ ըստ օրվա և ժամի
+    const today = window.TablebookValidation.localDate(new Date());
+    const entries = all
+      .filter(function (e) { return !orderFilter.value || e.status === orderFilter.value; })
+      .filter(function (e) { return !kindFilter.value || e.kind === kindFilter.value; })
+      .sort(function (a, b) {
+        const pa = a.status === "pending" ? 0 : 1;
+        const pb = b.status === "pending" ? 0 : 1;
+        if (pa !== pb) return pa - pb;
+        return (a.date + a.time) < (b.date + b.time) ? -1 : 1;
+      });
+
     const list = document.getElementById("admin-orders");
-    const menus = (res.data.menus || []).filter(function (m) { return !orderFilter.value || m.status === orderFilter.value; });
-    document.getElementById("orders-empty").hidden = menus.length > 0;
+    document.getElementById("orders-empty").hidden = entries.length > 0;
     list.replaceChildren();
-    for (const m of menus) {
-      const li = el("li", "order-card");
+    for (const e of entries) {
+      const li = el("li", "order-card kind-" + e.kind + (e.date < today ? " past" : ""));
       const head = el("div", "order-head");
       const when = el("div", "order-when");
-      when.append(el("strong", "", m.time), el("span", "", m.date));
+      when.append(el("strong", "", e.time), el("span", "", e.date));
       const info = el("div", "order-info");
-      info.append(
-        el("h3", "", m.restaurant_name),
-        el("span", "", "👤 " + m.customer.name + " · 📞 " + m.customer.telephone),
-        el("span", "", m.guests + " հյուր · " + money(m.total))
+      const title = el("h3");
+      title.append(
+        el("span", "kind-badge " + e.kind, e.kind === "menu" ? "🍽️ Մենյուով" : "🪑 Միայն սեղան"),
+        document.createTextNode(" " + (e.kind === "menu" ? e.restaurant_name : (e.table_name || "Սեղանը նշված չէ")))
       );
-      head.append(when, info, el("span", "status res-" + m.status, STATUS_TEXT[m.status]));
-      const dishes = el("ul", "order-dishes");
-      for (const i of m.items) {
-        const d = el("li");
-        d.append(el("span", "", i.qty + " × " + i.name), el("span", "", money(i.price * i.qty)));
-        dishes.append(d);
-      }
-      li.append(head, dishes);
-      if (m.note) li.append(el("p", "res-note", "📝 " + m.note));
+      info.append(
+        title,
+        el("span", "", "👤 " + e.customer.name + " · 📞 " + e.customer.telephone),
+        el("span", "", e.guests + " հյուր" + (e.kind === "menu" ? " · " + money(e.total) : ""))
+      );
+      head.append(when, info, el("span", "status res-" + e.status, STATUS_TEXT[e.status]));
+      li.append(head);
 
-      if (m.status === "pending") {
-        const actions = el("div", "row-actions");
+      if (e.kind === "menu") {
+        const dishes = el("ul", "order-dishes");
+        for (const i of e.items) {
+          const d = el("li");
+          d.append(el("span", "", i.qty + " × " + i.name), el("span", "", money(i.price * i.qty)));
+          dishes.append(d);
+        }
+        li.append(dishes);
+      }
+      if (e.note) li.append(el("p", "res-note", "📝 " + e.note));
+
+      const actions = el("div", "row-actions");
+      if (e.status === "pending") {
         const ok = el("button", "btn-pill primary small", "✓ Հաստատել");
         const no = el("button", "btn-pill ghost small danger", "✕ Մերժել");
         ok.type = no.type = "button";
-        ok.addEventListener("click", function () { setStatus(m.id, "confirmed"); });
-        no.addEventListener("click", function () { setStatus(m.id, "rejected"); });
+        ok.addEventListener("click", function () { setStatus(e, "confirmed"); });
+        no.addEventListener("click", function () { setStatus(e, "rejected"); });
         actions.append(ok, no);
-        li.append(actions);
       }
+      if ((e.status === "pending" || e.status === "confirmed") && e.date >= today) {
+        const move = el("button", "btn-pill ghost small", "🕒 Փոխել ժամը");
+        move.type = "button";
+        move.addEventListener("click", function () { openMove(e); });
+        actions.append(move);
+      }
+      if (actions.children.length) li.append(actions);
       list.append(li);
     }
   }
 
-  async function setStatus(id, status) {
-    const res = await send("POST", "/api/admin/evening-menus/" + id + "/status", { status: status });
-    Cart.toast(res.ok ? (status === "confirmed" ? "Պատվերը հաստատվեց" : "Պատվերը մերժվեց") : "Չհաջողվեց");
+  async function setStatus(entry, status) {
+    const res = await send("POST", baseUrl(entry) + entry.id + "/status", { status: status });
+    Cart.toast(res.ok ? (status === "confirmed" ? "Ամրագրումը հաստատվեց" : "Ամրագրումը մերժվեց") : "Չհաջողվեց");
     loadOrders();
     loadOverview();
   }
+
+  // Ժամի փոփոխություն. անցած ժամերը չեն երևում, սեղանի զբաղված ժամերը անջատված են
+  const mDialog = document.getElementById("move-dialog");
+  const mForm = document.getElementById("move-form");
+  let movingEntry = null;
+  let picker = null;
+
+  function openMove(entry) {
+    movingEntry = entry;
+    clearErrors(mForm);
+    const isTable = entry.kind === "table";
+    document.getElementById("mv-table-field").hidden = !isTable;
+    document.getElementById("mv-who").textContent = "👤 " + entry.customer.name + " · " + entry.guests + " հյուր · հիմա՝ " + entry.date + ", " + entry.time;
+    // Մենյուով պատվերը սեղան չունի, դրա համար սեղանի զբաղվածությունը չենք ստուգում
+    const values = {
+      date: entry.date,
+      time: entry.time,
+      guests: entry.guests,
+      tableId: entry.table_id,
+      exclude: isTable ? entry.id : null,
+      noTable: !isTable
+    };
+    if (!picker) {
+      picker = window.TablebookTimePicker.connect(Object.assign({
+        dateInput: mForm.elements.date,
+        tableSelect: mForm.elements.table_id,
+        grid: document.getElementById("mv-time")
+      }, values));
+    } else {
+      picker.set(values);
+    }
+    mDialog.showModal();
+  }
+
+  mForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(mForm));
+    if (!payload.time) return showErrors(mForm, "mv-", { time: "Ընտրեք ժամը" });
+    const res = await send("POST", baseUrl(movingEntry) + movingEntry.id + "/move", payload);
+    if (!res.ok) return showErrors(mForm, "mv-", res.data.errors || { form: "Չհաջողվեց պահպանել" });
+    mDialog.close();
+    Cart.toast("Ժամը փոխվեց՝ " + payload.date + ", " + payload.time);
+    loadOrders();
+  });
+
+  // ---------- Սեղաններ ----------
+
+  const tDialog = document.getElementById("table-dialog");
+  const tForm = document.getElementById("table-form");
+  let editingTable = null;
+
+  async function loadTables() {
+    const res = await api("/api/admin/tables");
+    const rows = document.getElementById("table-rows");
+    rows.replaceChildren();
+    const tables = res.data.tables || [];
+    if (tables.length === 0) {
+      const tr = el("tr");
+      const td = el("td", "muted", "Սեղաններ դեռ չկան։ Ավելացրեք առաջինը։");
+      td.colSpan = 4;
+      tr.append(td);
+      rows.append(tr);
+    }
+    for (const t of tables) {
+      const tr = el("tr");
+      if (!t.is_active) tr.className = "dim";
+      const name = el("td");
+      name.append(el("span", "row-emoji", "🪑"), el("strong", "", t.name));
+      const toggle = el("td");
+      const sw = el("input");
+      sw.type = "checkbox";
+      sw.className = "switch-input";
+      sw.checked = t.is_active;
+      sw.setAttribute("aria-label", "Ցուցադրել՝ " + t.name);
+      sw.addEventListener("change", async function () {
+        const upd = await send("PUT", "/api/admin/tables/" + t.id, Object.assign({}, t, { is_active: sw.checked }));
+        Cart.toast(upd.ok ? (sw.checked ? "Սեղանը ցուցադրվում է" : "Սեղանը թաքցվեց") : "Չհաջողվեց");
+        loadTables();
+      });
+      toggle.append(sw);
+      const actions = el("td", "cell-actions");
+      const edit = el("button", "link-btn", "Խմբագրել");
+      const del = el("button", "link-btn danger", "Ջնջել");
+      edit.type = del.type = "button";
+      edit.addEventListener("click", function () { openTableDialog(t); });
+      del.addEventListener("click", async function () {
+        if (!window.confirm("Ջնջե՞լ «" + t.name + "»-ը")) return;
+        const d = await send("DELETE", "/api/admin/tables/" + t.id);
+        Cart.toast(d.ok ? "Սեղանը ջնջվեց" : ((d.data.errors && d.data.errors.form) || "Չհաջողվեց"));
+        loadTables();
+      });
+      actions.append(edit, del);
+      tr.append(name, el("td", "", t.seats + " տեղ"), toggle, actions);
+      rows.append(tr);
+    }
+  }
+
+  function openTableDialog(t) {
+    editingTable = t;
+    tForm.reset();
+    clearErrors(tForm);
+    document.getElementById("td-title").textContent = t ? "Խմբագրել սեղանը" : "Նոր սեղան";
+    if (t) {
+      tForm.elements.name.value = t.name;
+      tForm.elements.seats.value = t.seats;
+      tForm.elements.is_active.checked = t.is_active;
+    }
+    tDialog.showModal();
+  }
+
+  document.getElementById("add-table").addEventListener("click", function () { openTableDialog(null); });
+
+  tForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(tForm));
+    payload.seats = Number(payload.seats);
+    payload.is_active = tForm.elements.is_active.checked;
+    const res = editingTable
+      ? await send("PUT", "/api/admin/tables/" + editingTable.id, payload)
+      : await send("POST", "/api/admin/tables", payload);
+    if (!res.ok) return showErrors(tForm, "t-", res.data.errors || { form: "Չհաջողվեց պահպանել" });
+    tDialog.close();
+    Cart.toast(editingTable ? "Սեղանը թարմացվեց" : "Սեղանը ավելացվեց 🎉");
+    loadTables();
+  });
 
   // ---------- Ռեստորաններ ----------
 
@@ -326,6 +488,7 @@ document.addEventListener("DOMContentLoaded", function () {
   iForm.addEventListener("submit", async function (event) {
     event.preventDefault();
     const payload = Object.fromEntries(new FormData(iForm));
+    if (!payload.price) return showErrors(iForm, "i-", { price: "Գրեք գինը" });
     payload.price = Number(payload.price);
     payload.is_available = iForm.elements.is_available.checked;
     const res = editingItem

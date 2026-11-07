@@ -12,6 +12,8 @@
   <script src="/cart-store.js" defer></script>
   <script src="/validation.js" defer></script>
   <script src="/auth.js" defer></script>
+  <script src="/fields.js" defer></script>
+  <script src="/time-picker.js" defer></script>
   <script src="/menu.js" defer></script>
 </head>
 <body class="page-cart">
@@ -82,17 +84,15 @@
                 <p class="field-error" id="date-error"></p>
               </div>
               <div class="field">
-                <label for="c-time">Ժամ</label>
-                <select id="c-time" name="time" required>
-                  <option value="">Ընտրեք</option>
-                </select>
-                <p class="field-error" id="time-error"></p>
+                <label for="c-guests">Հյուրերի քանակ</label>
+                <input id="c-guests" name="guests" type="text" inputmode="numeric" maxlength="2" autocomplete="off" data-digits value="2" required>
+                <p class="field-error" id="guests-error"></p>
               </div>
             </div>
             <div class="field">
-              <label for="c-guests">Հյուրերի քանակ</label>
-              <input id="c-guests" name="guests" type="number" inputmode="numeric" min="1" max="12" value="2" required>
-              <p class="field-error" id="guests-error"></p>
+              <span class="field-label" id="c-time-label">Ժամ</span>
+              <div class="time-grid" id="c-time" role="radiogroup" aria-labelledby="c-time-label"></div>
+              <p class="field-error" id="time-error"></p>
             </div>
             <div class="field">
               <label for="c-note">Նշում (ըստ ցանկության)</label>

@@ -22,12 +22,16 @@
     dateFar: "Կարելի է ամրագրել առավելագույնը 60 օր առաջ",
     timeEmpty: "Ընտրեք ժամը",
     timeClosed: "Սրճարանը աշխատում է 09:00–22:00, վերջին ամրագրումը՝ 21:00",
-    timePast: "Այս ժամն այսօր արդեն անցել է",
+    timePast: "Ամրագրել կարելի է ներկա պահից առնվազն 30 րոպե հետո",
     guests: "Հյուրերի քանակը պետք է լինի 1-ից 12",
     noteLong: "Նշումը պետք է լինի առավելագույնը 300 նիշ",
     duplicate: "Այս օրվա և ժամի համար դուք արդեն ամրագրում ունեք",
     notFound: "Ամրագրումը չի գտնվել",
-    cannotCancel: "Այս ամրագրումն այլևս չի կարելի չեղարկել"
+    cannotCancel: "Այս ամրագրումն այլևս չի կարելի չեղարկել",
+    cannotReschedule: "Այս ամրագրման ժամն այլևս չի կարելի փոխել",
+    tableEmpty: "Ընտրեք սեղանը",
+    tableSeats: "Այս սեղանին այդքան հյուր չի տեղավորվում",
+    tableBusy: "Այս սեղանն այդ ժամին զբաղված է։ Նույն սեղանը կարելի է ամրագրել նախորդ ամրագրումից առնվազն 1 ժամ հետո։"
   };
 
   // Սրճարանի աշխատանքային ժամերը և ամրագրման սահմանները
@@ -37,7 +41,11 @@
     stepMinutes: 30,
     maxGuests: 12,
     maxDaysAhead: 60,
-    maxNoteLength: 300
+    maxNoteLength: 300,
+    // Այսօրվա համար ամրագրել կարելի է ներկա պահից առնվազն այսքան րոպե հետո
+    minLeadMinutes: 30,
+    // Նույն սեղանի երկու ամրագրումների միջև նվազագույն ընդմիջումը
+    tableGapMinutes: 60
   };
 
   function toMinutes(hhmm) {
@@ -57,6 +65,12 @@
   // Օրը ՏՏՏՏ-ԱԱ-ՕՕ տեսքով՝ տեղական ժամով (ոչ UTC)
   function localDate(d) {
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  // Ժամը արդեն ուշ է ամրագրելու համար (անցել է կամ մնացել է 30 րոպեից քիչ)
+  function isTooSoon(date, time, now) {
+    if (date !== localDate(now)) return false;
+    return toMinutes(time) < now.getHours() * 60 + now.getMinutes() + BOOKING.minLeadMinutes;
   }
 
   function addDays(d, days) {
@@ -141,7 +155,7 @@
       errors.time = MESSAGES.timeEmpty;
     } else if (!TIME_SLOTS.includes(data.time)) {
       errors.time = MESSAGES.timeClosed;
-    } else if (data.date === today && toMinutes(data.time) <= now.getHours() * 60 + now.getMinutes()) {
+    } else if (isTooSoon(data.date, data.time, now)) {
       errors.time = MESSAGES.timePast;
     }
 
@@ -158,6 +172,8 @@
     MESSAGES,
     BOOKING,
     TIME_SLOTS,
+    toMinutes,
+    isTooSoon,
     localDate,
     addDays,
     validateRegistration,

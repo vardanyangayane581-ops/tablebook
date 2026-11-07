@@ -11,11 +11,22 @@ CREATE TABLE IF NOT EXISTS users (
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Սրճարանի սեղանները, որոնք ադմինը ավելացնում և խմբագրում է
+CREATE TABLE IF NOT EXISTS cafe_tables (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  name       TEXT    NOT NULL,
+  seats      INTEGER NOT NULL CHECK (seats BETWEEN 1 AND 12),
+  is_active  INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Սեղանների ամրագրումներ
 -- date՝ ՏՏՏՏ-ԱԱ-ՕՕ, time՝ ԺԺ:ՐՐ (սրճարանի տեղական ժամով)
+-- Հին բազաներում table_id սյունակը ավելացնում է tables.js-ը
 CREATE TABLE IF NOT EXISTS reservations (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  table_id   INTEGER REFERENCES cafe_tables(id) ON DELETE SET NULL,
   date       TEXT    NOT NULL,
   time       TEXT    NOT NULL,
   guests     INTEGER NOT NULL CHECK (guests BETWEEN 1 AND 12),

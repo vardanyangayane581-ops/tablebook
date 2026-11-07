@@ -148,7 +148,8 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
         (SELECT COUNT(*) FROM restaurants) AS restaurants,
         (SELECT COUNT(*) FROM menu_items) AS items,
         (SELECT COUNT(*) FROM users) AS users,
-        (SELECT COUNT(*) FROM evening_menus WHERE status = 'pending') AS pending`)
+        (SELECT COUNT(*) FROM evening_menus WHERE status = 'pending') +
+        (SELECT COUNT(*) FROM reservations WHERE status = 'pending') AS pending`)
   };
 
   // ----- Միակ աշխատողը՝ .env ֆայլից -----
@@ -493,4 +494,6 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
     q.setMenuStatus.run(status, id);
     res.json({ ok: true });
   });
+
+  return { requireAdmin };
 };

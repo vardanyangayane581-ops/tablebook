@@ -40,19 +40,38 @@ document.addEventListener("DOMContentLoaded", function () {
     cancelled: "Չեղարկված է"
   };
 
-  // Քանակի կոճակներ՝ − 2 +
+  // Քանակ՝ − 2 +, իսկ թիվը կարելի է նաև ձեռքով գրել
   function stepper(itemId, qty, onChange) {
     const box = el("div", "stepper");
     const minus = el("button", "step-btn", "−");
     minus.type = "button";
     minus.setAttribute("aria-label", "Պակասեցնել");
-    const value = el("span", "step-value", String(qty));
-    value.setAttribute("aria-live", "polite");
+    const value = el("input", "step-value");
+    value.type = "text";
+    value.inputMode = "numeric";
+    value.maxLength = 2;
+    value.autocomplete = "off";
+    value.value = String(qty);
+    value.setAttribute("data-digits", "");
+    value.setAttribute("aria-label", "Քանակ");
     const plus = el("button", "step-btn", "+");
     plus.type = "button";
     plus.setAttribute("aria-label", "Ավելացնել");
     minus.addEventListener("click", function () { Cart.setQty(itemId, qty - 1); if (onChange) onChange(); });
     plus.addEventListener("click", function () { Cart.setQty(itemId, qty + 1); if (onChange) onChange(); });
+    // Դատարկ կամ 0 գրելու դեպքում վերադարձնում ենք նախորդ քանակը (հեռացնելու համար կա ✕ կոճակը)
+    value.addEventListener("change", function () {
+      const n = Number(value.value);
+      if (n >= 1) {
+        Cart.setQty(itemId, n);
+        if (onChange) onChange();
+      } else {
+        value.value = String(qty);
+      }
+    });
+    value.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") value.blur();
+    });
     box.append(minus, value, plus);
     return box;
   }
@@ -244,37 +263,15 @@ document.addEventListener("DOMContentLoaded", function () {
   if (body.classList.contains("page-cart")) {
     const V = window.TablebookValidation;
     const form = document.getElementById("checkout-form");
-    const dateInput = form.elements.date;
-    const timeSelect = form.elements.time;
     let loggedIn = false;
 
-    // Ժամեր և օրեր՝ նույն կանոններով, ինչ սեղանի ամրագրումը
-    const now = new Date();
-    dateInput.min = V.localDate(now);
-    dateInput.max = V.localDate(V.addDays(now, V.BOOKING.maxDaysAhead));
-    dateInput.value = V.localDate(now);
-    for (const slot of V.TIME_SLOTS) {
-      const option = el("option", "", slot);
-      option.value = slot;
-      timeSelect.append(option);
-    }
-    function updateSlots() {
-      const current = new Date();
-      const isToday = dateInput.value === V.localDate(current);
-      const nowMinutes = current.getHours() * 60 + current.getMinutes();
-      let firstFree = "";
-      for (const option of timeSelect.options) {
-        if (!option.value) continue;
-        const minutes = Number(option.value.slice(0, 2)) * 60 + Number(option.value.slice(3, 5));
-        option.disabled = isToday && minutes <= nowMinutes;
-        if (!option.disabled && !firstFree && minutes >= 19 * 60) firstFree = option.value;
-      }
-      if (!timeSelect.value || (timeSelect.selectedOptions[0] && timeSelect.selectedOptions[0].disabled)) {
-        timeSelect.value = firstFree;
-      }
-    }
-    updateSlots();
-    dateInput.addEventListener("change", updateSlots);
+    // Ժամեր և օրեր՝ նույն կանոններով և նույն գունավոր կոճակներով, ինչ սեղանի ամրագրումը։
+    // Ճաշացանկը սեղան չունի, դրա համար զբաղված ժամեր չկան
+    window.TablebookTimePicker.connect({
+      dateInput: form.elements.date,
+      grid: document.getElementById("c-time"),
+      time: "19:00"
+    });
 
     function render() {
       const cart = Cart.load();

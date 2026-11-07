@@ -59,6 +59,7 @@ function openDatabase() {
 
 const db = openDatabase();
 require("./db/seed.js").seedDatabase(db);
+const tables = require("./tables.js")(db);
 
 // Բոլոր հարցումները պարամետրացված են (?), արժեքները երբեք չեն միացվում տեքստին
 const insertUser = db.prepare(
@@ -71,18 +72,19 @@ const findUserById = db.prepare(
 );
 
 const insertReservation = db.prepare(
-  "INSERT INTO reservations (user_id, date, time, guests, note) VALUES (?, ?, ?, ?, ?)"
+  "INSERT INTO reservations (user_id, table_id, date, time, guests, note) VALUES (?, ?, ?, ?, ?, ?)"
 );
 // Նույն օրվա և ժամի համար նույն հյուրի մեկ ակտիվ ամրագրում
 const activeReservationAt = db.prepare(
   "SELECT 1 FROM reservations WHERE user_id = ? AND date = ? AND time = ? AND status IN ('pending', 'confirmed')"
 );
+const RESERVATION_FIELDS =
+  "SELECT r.id, r.table_id, t.name AS table_name, r.date, r.time, r.guests, r.note, r.status, r.created_at " +
+  "FROM reservations r LEFT JOIN cafe_tables t ON t.id = r.table_id ";
 const reservationsOfUser = db.prepare(
-  "SELECT id, date, time, guests, note, status, created_at FROM reservations WHERE user_id = ? ORDER BY date DESC, time DESC"
+  RESERVATION_FIELDS + "WHERE r.user_id = ? ORDER BY r.date DESC, r.time DESC"
 );
-const findReservation = db.prepare(
-  "SELECT id, date, time, guests, note, status, created_at FROM reservations WHERE id = ? AND user_id = ?"
-);
+const findReservation = db.prepare(RESERVATION_FIELDS + "WHERE r.id = ? AND r.user_id = ?");
 const cancelReservationById = db.prepare(
   "UPDATE reservations SET status = 'cancelled' WHERE id = ? AND user_id = ?"
 );
@@ -90,6 +92,8 @@ const cancelReservationById = db.prepare(
 function publicReservation(row) {
   return {
     id: Number(row.id),
+    table_id: row.table_id === null ? null : Number(row.table_id),
+    table_name: row.table_name || null,
     date: row.date,
     time: row.time,
     guests: Number(row.guests),
@@ -233,7 +237,11 @@ app.post("/api/reservations", requireUser, (req, res) => {
     return res.status(409).json({ errors: { form: MESSAGES.duplicate } });
   }
 
-  const result = insertReservation.run(req.session.userId, data.date, data.time, data.guests, data.note);
+  const tableId = Number((req.body || {}).table_id) || null;
+  const tableError = tables.tableError(tableId, data.guests, data.date, data.time);
+  if (tableError) return res.status(409).json({ errors: { table_id: tableError } });
+
+  const result = insertReservation.run(req.session.userId, tableId, data.date, data.time, data.guests, data.note);
   const row = findReservation.get(Number(result.lastInsertRowid), req.session.userId);
   res.status(201).json({ reservation: publicReservation(row) });
 });
@@ -259,7 +267,10 @@ app.post("/api/reservations/:id/cancel", requireUser, (req, res) => {
 });
 
 // Ռեստորաններ, մենյու, զամբյուղից պատվերներ և ադմին վահանակ
-require("./restaurants.js")(app, db, { requireUser, startSession });
+const { requireAdmin } = require("./restaurants.js")(app, db, { requireUser, startSession });
+
+// Սեղաններ, զբաղված ժամեր, ժամի փոփոխություն և բոլոր ամրագրումները ադմին վահանակում
+tables.routes(app, { requireUser, requireAdmin });
 
 // Չգտնված API երթուղի
 app.use("/api", (req, res) => {

@@ -12,6 +12,7 @@
   <script src="/cart-store.js" defer></script>
   <script src="/validation.js" defer></script>
   <script src="/auth.js" defer></script>
+  <script src="/time-picker.js" defer></script>
   <script src="/booking.js" defer></script>
 </head>
 <body class="page-mine">
@@ -64,5 +65,36 @@
       <ul class="reservations" id="reservations"></ul>
     </main>
   </div>
+
+  <!-- Ժամի փոփոխություն -->
+  <dialog class="tb-dialog" id="move-dialog" aria-labelledby="move-title">
+    <form class="admin-form" id="move-form" novalidate>
+      <h2 id="move-title">🕒 Փոխել ամրագրման ժամը</h2>
+      <p class="muted">Փոփոխությունից հետո ամրագրումը նորից կսպասի սրճարանի հաստատմանը։</p>
+      <div class="field-row">
+        <div class="field">
+          <label for="m-date">Օր</label>
+          <input id="m-date" name="date" type="date" required>
+          <p class="field-error" id="m-date-error"></p>
+        </div>
+        <div class="field">
+          <label for="m-table">Սեղան</label>
+          <select id="m-table" name="table_id" required></select>
+          <p class="field-error" id="m-table_id-error"></p>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label" id="m-time-label">Ժամ</span>
+        <div class="time-grid" id="m-time" role="radiogroup" aria-labelledby="m-time-label"></div>
+        <p class="time-legend"><span class="dot free"></span> ազատ <span class="dot busy"></span> ամրագրված</p>
+        <p class="field-error" id="m-time-error"></p>
+      </div>
+      <p class="field-error" id="m-form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn-pill ghost" type="button" data-close>Չեղարկել</button>
+        <button class="btn-pill primary" type="submit">Պահպանել</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

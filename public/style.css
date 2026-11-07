@@ -1816,3 +1816,190 @@ header { border-radius: 26px; flex-wrap: wrap; }
   .header-actions { flex-wrap: wrap; justify-content: flex-start; gap: 6px 12px; }
   .auth-box { flex-wrap: wrap; gap: 6px 12px; }
 }
+
+/* ---------- Ժամի ընտրություն, սեղաններ և ձևերի դաշտեր ---------- */
+
+.field-label { display: block; font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+
+/* Ժամի կոճակներ՝ ազատը կանաչ եզրով, ընտրվածը՝ կանաչ գրադիենտով, զբաղվածը՝ գծված */
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--accent-soft), var(--warm-soft));
+  border: 1px solid var(--line);
+}
+.time-chip { position: relative; cursor: pointer; }
+.time-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.time-chip span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.time-chip:hover span { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(42, 122, 95, 0.18); }
+.time-chip input:checked + span {
+  background: var(--grad);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(42, 122, 95, 0.35);
+}
+.time-chip input:focus-visible + span { outline: 3px solid var(--warm); outline-offset: 2px; }
+.time-chip input:disabled { cursor: not-allowed; }
+/* Ամրագրված ժամ՝ կարմրավուն ֆոն և «ԱՄՐԱԳՐՎԱԾ» պիտակ */
+.time-chip input:disabled + span {
+  flex-direction: column;
+  gap: 2px;
+  border: 1.5px dashed var(--error);
+  background: var(--danger-soft);
+  color: var(--error);
+  transform: none;
+  box-shadow: none;
+}
+.time-chip span small {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--error);
+  color: var(--surface);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+.time-chip.booked span { min-height: 52px; }
+.time-empty { grid-column: 1 / -1; margin: 6px 0; text-align: center; color: var(--muted); font-weight: 600; }
+.time-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+.time-legend .dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; }
+.time-legend .dot.free { border: 1.5px solid var(--accent); background: var(--surface); }
+.time-legend .dot.busy { margin-left: 10px; background: var(--danger-soft); border: 1.5px dashed var(--error); }
+
+/* Դաշտերը պատուհաններում և ձևերում՝ կայքի գույներով */
+.admin-form .field input,
+.admin-form .field select,
+.admin-form .field textarea,
+.book-form .field input,
+.book-form .field select,
+.book-form .field textarea {
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background-color: var(--bg);
+  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+.admin-form .field input:hover,
+.admin-form .field select:hover,
+.admin-form .field textarea:hover,
+.book-form .field input:hover,
+.book-form .field select:hover,
+.book-form .field textarea:hover { border-color: var(--wood); }
+.admin-form .field input:focus,
+.admin-form .field select:focus,
+.admin-form .field textarea:focus,
+.book-form .field input:focus,
+.book-form .field select:focus,
+.book-form .field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.admin-form .field select,
+.book-form .field select {
+  appearance: none;
+  padding-right: 42px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+.field input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: opacity(0.6); }
+
+/* Պատուհաններ (ադմին և հաճախորդ) */
+.tb-dialog {
+  width: min(640px, calc(100% - 24px));
+  max-height: calc(100vh - 40px);
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+}
+.tb-dialog::backdrop { background: rgba(10, 14, 12, 0.55); backdrop-filter: blur(3px); }
+.admin-dialog, .tb-dialog { border-top: 6px solid var(--accent); }
+.admin-dialog h2, .tb-dialog h2 { color: var(--accent); }
+.tb-dialog .muted, .admin-dialog .muted { margin: 0; }
+
+/* Ամրագրումների տեսակը ադմին վահանակում */
+.filters { display: flex; flex-wrap: wrap; gap: 10px; }
+.filters select {
+  min-height: 42px;
+  padding: 8px 38px 8px 14px;
+  font: inherit;
+  font-size: 15px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--surface) linear-gradient(45deg, transparent 50%, var(--accent) 50%) calc(100% - 20px) 50% / 6px 6px no-repeat;
+  color: var(--ink);
+  appearance: none;
+  cursor: pointer;
+}
+.filters select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.kind-badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-family: "Noto Sans Armenian", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.kind-badge.table { background: var(--warm-soft); color: var(--wood-dark); }
+.kind-badge.menu { background: var(--accent-soft); color: var(--accent); }
+.order-card.kind-table { border-left: 5px solid var(--warm); }
+.order-card.kind-menu { border-left: 5px solid var(--accent); }
+
+/* «Իմ ամրագրումները»՝ գործողությունների կոճակներ */
+.res-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+@media (max-width: 560px) {
+  .time-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); padding: 10px; }
+  .res-actions { width: 100%; margin-left: 0; }
+  .res-actions > * { flex: 1; }
+}
+
+/* Թվային դաշտեր՝ առանց վերև-ներքև սլաքների (եթե ինչ-որ տեղ մնացել է type="number") */
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.field input[data-digits],
+.field input[data-decimal] { font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+
+/* Ուտեստի քանակը զամբյուղում՝ գրվում է ձեռքով */
+input.step-value {
+  width: 38px;
+  min-height: 32px;
+  padding: 0;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+}
+input.step-value:hover { border-color: var(--line); }
+input.step-value:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* Զամբյուղի ձևի ժամերը նեղ սյունակում */
+.checkout .time-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
