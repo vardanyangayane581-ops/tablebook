@@ -50,7 +50,8 @@
   }
 
   // Միացնում է օրվա, սեղանի և ժամի դաշտերը. զբաղված ժամերը բերում է սերվերից
-  // opts: dateInput, grid, tableSelect (ըստ ցանկության), guests (թիվ կամ input), exclude, date, time, tableId, noTable
+  // opts: dateInput, grid, tableSelect (ըստ ցանկության), guests (թիվ կամ input), exclude, date, time, tableId, noTable,
+  //       restaurant (ռեստորանի id կամ select)՝ որի սեղաններն են ցույց տրվում
   // Վերադարձնում է set()՝ նույն դաշտերը նոր ամրագրման համար բացելու համար (օր.՝ պատուհանում)
   function connect(opts) {
     const dateInput = opts.dateInput;
@@ -81,10 +82,21 @@
       return tableSelect && !opts.noTable;
     }
 
+    function restaurantId() {
+      const r = opts.restaurant;
+      return r && typeof r === "object" ? r.value : r || "";
+    }
+
     function fillTables() {
       if (!useTable()) return;
       const current = tableSelect.value || wantedTable;
       tableSelect.replaceChildren();
+      if (state.tables.length === 0) {
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = restaurantId() || opts.exclude ? "Ազատ սեղաններ չկան" : "Նախ ընտրեք ռեստորանը";
+        tableSelect.append(empty);
+      }
       let firstFree = "";
       for (const t of state.tables) {
         const option = document.createElement("option");
@@ -106,7 +118,9 @@
     async function load() {
       if (!dateInput.value) return;
       try {
-        const query = "?date=" + encodeURIComponent(dateInput.value) + (opts.exclude ? "&exclude=" + opts.exclude : "");
+        const query = "?date=" + encodeURIComponent(dateInput.value) +
+          (opts.exclude ? "&exclude=" + opts.exclude : "") +
+          (restaurantId() ? "&restaurant=" + encodeURIComponent(restaurantId()) : "");
         const res = await fetch("/api/availability" + query);
         state = res.ok ? await res.json() : { tables: [], busy: {} };
       } catch (e) {
@@ -118,6 +132,9 @@
 
     opts.grid.addEventListener("change", function (event) { wanted = event.target.value; });
     dateInput.addEventListener("change", load);
+    if (opts.restaurant && typeof opts.restaurant === "object") {
+      opts.restaurant.addEventListener("change", function () { wantedTable = ""; load(); });
+    }
     if (tableSelect) {
       tableSelect.addEventListener("change", function () { wantedTable = tableSelect.value; draw(); });
     }

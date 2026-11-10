@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", function () {
     "cafe-table.jpg": "Սեղան",
     "coffee-friends.jpg": "Ընկերներ"
   };
+  const Regions = window.TablebookRegions;
+  for (const r of Regions.REGIONS) IMAGE_NAMES[Regions.regionImage(r.id)] = "🗺️ " + r.name + " (նկարազարդում)";
 
   function el(tag, className, text) {
     const node = document.createElement(tag);
@@ -171,7 +173,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const title = el("h3");
       title.append(
         el("span", "kind-badge " + e.kind, e.kind === "menu" ? "🍽️ Մենյուով" : "🪑 Միայն սեղան"),
-        document.createTextNode(" " + (e.kind === "menu" ? e.restaurant_name : (e.table_name || "Սեղանը նշված չէ")))
+        document.createTextNode(" " + (e.kind === "menu"
+          ? e.restaurant_name
+          : (e.restaurant_name ? e.restaurant_name + " · " : "") + (e.table_name || "Սեղանը նշված չէ")))
       );
       info.append(
         title,
@@ -280,8 +284,46 @@ document.addEventListener("DOMContentLoaded", function () {
   const tForm = document.getElementById("table-form");
   let editingTable = null;
 
+  const tableRestaurant = document.getElementById("table-restaurant");
+  let restaurantOptionsReady = false;
+
+  // Ռեստորանների ցանկը՝ խմբավորված ըստ մարզի (զտիչի և սեղանի ձևի համար)
+  async function restaurantOptions(select, withAll) {
+    if (!restaurants.length) {
+      const res = await api("/api/admin/restaurants");
+      restaurants = res.data.restaurants || [];
+      images = res.data.images || [];
+    }
+    const keep = select.value;
+    select.replaceChildren();
+    if (withAll) {
+      const all = el("option", "", "Բոլոր ռեստորանները");
+      all.value = "";
+      select.append(all);
+    }
+    for (const region of Regions.REGIONS) {
+      const list = restaurants.filter(function (r) { return r.region === region.id; });
+      if (!list.length) continue;
+      const group = el("optgroup");
+      group.label = Regions.regionTitle(region);
+      for (const r of list) {
+        const o = el("option", "", r.name + " · " + r.city);
+        o.value = String(r.id);
+        group.append(o);
+      }
+      select.append(group);
+    }
+    select.value = keep;
+  }
+
+  tableRestaurant.addEventListener("change", loadTables);
+
   async function loadTables() {
-    const res = await api("/api/admin/tables");
+    if (!restaurantOptionsReady) {
+      await restaurantOptions(tableRestaurant, true);
+      restaurantOptionsReady = true;
+    }
+    const res = await api("/api/admin/tables" + (tableRestaurant.value ? "?restaurant=" + tableRestaurant.value : ""));
     const rows = document.getElementById("table-rows");
     rows.replaceChildren();
     const tables = res.data.tables || [];
@@ -297,6 +339,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!t.is_active) tr.className = "dim";
       const name = el("td");
       name.append(el("span", "row-emoji", "🪑"), el("strong", "", t.name));
+      if (!tableRestaurant.value && t.restaurant_name) {
+        name.append(el("small", "row-sub", t.restaurant_name + (t.restaurant_city ? " · " + t.restaurant_city : "")));
+      }
       const toggle = el("td");
       const sw = el("input");
       sw.type = "checkbox";
@@ -326,10 +371,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function openTableDialog(t) {
+  async function openTableDialog(t) {
     editingTable = t;
     tForm.reset();
     clearErrors(tForm);
+    await restaurantOptions(tForm.elements.restaurant_id, false);
+    tForm.elements.restaurant_id.value = t ? String(t.restaurant_id || "") : tableRestaurant.value || tForm.elements.restaurant_id.value;
     document.getElementById("td-title").textContent = t ? "Խմբագրել սեղանը" : "Նոր սեղան";
     if (t) {
       tForm.elements.name.value = t.name;
@@ -365,6 +412,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const res = await api("/api/admin/restaurants");
     restaurants = res.data.restaurants || [];
     images = res.data.images || [];
+    restaurantOptionsReady = false; // սեղանների զտիչը կթարմացվի նոր ցանկով
     const rows = document.getElementById("restaurant-rows");
     rows.replaceChildren();
     for (const r of restaurants) {
@@ -394,7 +442,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loadRestaurants();
       });
       actions.append(menuBtn, editBtn, delBtn);
-      tr.append(name, el("td", "", r.cuisine), el("td", "", String(r.item_count)), el("td", "", "⭐ " + r.rating.toFixed(1)), status, actions);
+      tr.append(name, el("td", "", "📍 " + (r.city || "—")), el("td", "", r.cuisine), el("td", "", String(r.item_count)), el("td", "", "⭐ " + r.rating.toFixed(1)), status, actions);
       rows.append(tr);
     }
     if (selected) {
@@ -408,10 +456,30 @@ document.addEventListener("DOMContentLoaded", function () {
   const rForm = document.getElementById("restaurant-form");
   let editingRestaurant = null;
 
+  const regionSelect = rForm.elements.region;
+  const citySelect = rForm.elements.city;
+  regionSelect.replaceChildren.apply(regionSelect, Regions.REGIONS.map(function (r) {
+    const o = el("option", "", Regions.regionTitle(r));
+    o.value = r.id;
+    return o;
+  }));
+  function fillCities(cityValue) {
+    const region = Regions.regionById(regionSelect.value) || Regions.REGIONS[0];
+    citySelect.replaceChildren.apply(citySelect, region.cities.map(function (c) {
+      const o = el("option", "", c);
+      o.value = c;
+      return o;
+    }));
+    citySelect.value = region.cities.indexOf(cityValue) !== -1 ? cityValue : region.center;
+  }
+  regionSelect.addEventListener("change", function () { fillCities(""); });
+
   function openRestaurantDialog(r) {
     editingRestaurant = r;
     rForm.reset();
     clearErrors(rForm);
+    regionSelect.value = r && r.region ? r.region : Regions.REGIONS[0].id;
+    fillCities(r ? r.city : "");
     const select = rForm.elements.image;
     select.replaceChildren.apply(select, (images.length ? images : Object.keys(IMAGE_NAMES)).map(function (img) {
       const o = el("option", "", IMAGE_NAMES[img] || img);

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Սյունիք">
+<title>Սյունիք</title>
+<defs><linearGradient id="syu-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3e6d9c"/><stop offset="0.55" stop-color="#9ec0de"/><stop offset="1" stop-color="#efe2cf"/></linearGradient>
+  <linearGradient id="syunik-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
+</defs>
+
+  <rect width="800" height="500" fill="url(#syu-sky)"/>
+  <circle cx="400" cy="90" r="57.2" fill="#ffe9bf" opacity="0.35"/>
+  <circle cx="400" cy="90" r="35.2" fill="#ffe9bf" opacity="0.45"/>
+  <circle cx="400" cy="90" r="22" fill="#fff9ec"/>
+  <path d="M0 500 L0 160 L110 90 L200 150 L300 70 L400 140 L500 60 L610 150 L720 90 L800 130 L800 500 Z" fill="#5d7ea0" />
+  <path d="M290 80 L300 70 L316 86 L304 90 Z M488 72 L500 60 L516 76 L502 80 Z M710 100 L720 90 L734 104 L722 106 Z" fill="#fff"/>
+  <path d="M0 500 L0 240 L150 170 L300 230 L400 300 L500 230 L650 170 L800 220 L800 500 Z" fill="#476b56" />
+  <path d="M300 230 L400 300 L500 230 L460 330 L400 420 L340 330 Z" fill="#2f4d3c"/>
+  <path d="M392 420 Q400 380 408 420 L420 500 L380 500 Z" fill="#6fb3d8"/>
+  <line x1="60" y1="210" x2="760" y2="150" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="452" y="170" width="26" height="18" rx="3" fill="#e9a23b"/><line x1="465" y1="160" x2="465" y2="170" stroke="#2b2b2b" stroke-width="1.6"/>
+  <path d="M0 500 L0 380 Q0 380 80 365 Q160 350 230 361 Q300 372 400 370 Q500 368 570 358 Q640 348 720 362 T800 376 L800 500 Z" fill="#c79a72" />
+  <path d="M100 420 L106 278 Q120 190 134 278 L140 420 Z" fill="#b97a58"/>
+    <ellipse cx="120" cy="218.2" rx="15.2" ry="8" fill="#7d4f3a"/><path d="M160 430 L164.5 300 Q175 230 185.5 300 L190 430 Z" fill="#a66a4c"/>
+    <ellipse cx="175" cy="254" rx="11.4" ry="6" fill="#7d4f3a"/><path d="M207 425 L212.4 287 Q225 205 237.6 287 L243 425 Z" fill="#b97a58"/>
+    <ellipse cx="225" cy="231.8" rx="13.68" ry="7.2" fill="#7d4f3a"/><path d="M583 425 L588.1 289 Q600 210 611.9 289 L617 425 Z" fill="#a66a4c"/>
+    <ellipse cx="600" cy="236.10000000000002" rx="12.92" ry="6.800000000000001" fill="#7d4f3a"/><path d="M629 430 L635.3 284 Q650 190 664.7 284 L671 430 Z" fill="#b97a58"/>
+    <ellipse cx="650" cy="219.60000000000002" rx="15.96" ry="8.4" fill="#7d4f3a"/><path d="M691 435 L695.2 307 Q705 240 714.8 307 L719 435 Z" fill="#a66a4c"/>
+    <ellipse cx="705" cy="263.3" rx="10.64" ry="5.6000000000000005" fill="#7d4f3a"/>
+  <rect y="440" width="800" height="60" fill="#8f5f45"/>
+<rect width="800" height="500" fill="url(#syunik-shade)"/>
+</svg>

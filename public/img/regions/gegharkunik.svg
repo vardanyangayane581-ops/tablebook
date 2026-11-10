@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Գեղարքունիք">
+<title>Գեղարքունիք</title>
+<defs><linearGradient id="geg-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb6e0"/><stop offset="0.6" stop-color="#cfe6f3"/><stop offset="1" stop-color="#eef6f8"/></linearGradient><linearGradient id="geg-lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f8fc4"/><stop offset="1" stop-color="#1f5f8f"/></linearGradient>
+  <linearGradient id="gegharkunik-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
+</defs>
+
+  <rect width="800" height="500" fill="url(#geg-sky)"/>
+  <circle cx="660" cy="90" r="57.2" fill="#e9f5ff" opacity="0.35"/>
+  <circle cx="660" cy="90" r="35.2" fill="#e9f5ff" opacity="0.45"/>
+  <circle cx="660" cy="90" r="22" fill="#ffffff"/>
+  <path d="M0 500 L0 250 L120 190 L210 230 L330 170 L430 225 L560 180 L680 230 L800 200 L800 500 Z" fill="#8ca3b8" />
+  <path d="M110 197 L120 190 L134 200 L124 204 Z M320 178 L330 170 L344 182 L332 186 Z M550 188 L560 180 L574 192 L562 194 Z" fill="#fff"/>
+  <path d="M0 500 L0 270 Q0 270 100 262.5 Q200 255 300 260.5 Q400 266 500 258 Q600 250 700 256 T800 262 L800 500 Z" fill="#6d8f73" />
+  <rect y="270" width="800" height="230" fill="url(#geg-lake)"/>
+  <path d="M60 300 h120" stroke="#bfe3f7" stroke-width="2" opacity="0.6" stroke-linecap="round"/><path d="M100 320 h114" stroke="#bfe3f7" stroke-width="2" opacity="0.6" stroke-linecap="round"/><path d="M140 345 h108" stroke="#bfe3f7" stroke-width="2" opacity="0.6" stroke-linecap="round"/><path d="M180 370 h102" stroke="#bfe3f7" stroke-width="2" opacity="0.6" stroke-linecap="round"/><path d="M220 400 h96" stroke="#bfe3f7" stroke-width="2" opacity="0.6" stroke-linecap="round"/><path d="M260 435 h90" stroke="#bfe3f7" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+  <path d="M470 310 h80" stroke="#bfe3f7" stroke-width="2" opacity="0.5" stroke-linecap="round"/><path d="M500 330 h80" stroke="#bfe3f7" stroke-width="2" opacity="0.5" stroke-linecap="round"/><path d="M530 360 h80" stroke="#bfe3f7" stroke-width="2" opacity="0.5" stroke-linecap="round"/><path d="M560 390 h80" stroke="#bfe3f7" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+  <path d="M470 300 Q520 248 600 262 Q640 270 660 300 Z" fill="#6f8f5c"/>
+  <g fill="#5a4a42">
+    <rect x="548.5" y="244" width="33" height="22"/>
+    <path d="M546.3 244 L565 234.1 L583.7 244 Z"/>
+    <rect x="558.95" y="224.2" width="12.100000000000001" height="12.100000000000001"/>
+    <path d="M557.3 224.2 L565 212.1 L572.7 224.2 Z"/>
+    <rect x="564.45" y="206.6" width="1.1" height="6.050000000000001"/>
+    <rect x="562.8" y="208.25" width="4.4" height="1.1"/>
+  </g><g fill="#5a4a42">
+    <rect x="592.4" y="255.2" width="25.2" height="16.8"/>
+    <path d="M590.72 255.2 L605 247.64 L619.28 255.2 Z"/>
+    <rect x="600.38" y="240.08" width="9.24" height="9.24"/>
+    <path d="M599.12 240.08 L605 230.84 L610.88 240.08 Z"/>
+    <rect x="604.58" y="226.64" width="0.84" height="4.62"/>
+    <rect x="603.32" y="227.9" width="3.36" height="0.84"/>
+  </g>
+  <path d="M0 500 L0 440 Q140 420 260 450 Q340 470 420 500 Z" fill="#c8b48a"/>
+  <path d="M120 440 l40 -60 l6 0 l0 60 z" fill="#fff" opacity="0.9"/><rect x="100" y="440" width="80" height="10" rx="4" fill="#8a5532"/>
+<rect width="800" height="500" fill="url(#gegharkunik-shade)"/>
+</svg>

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/style.css">
   <script src="/theme.js"></script>
   <script src="/cart-store.js" defer></script>
+  <script src="/regions.js" defer></script>
   <script src="/auth.js" defer></script>
   <script src="/fields.js" defer></script>
   <script src="/menu.js" defer></script>
@@ -47,7 +48,7 @@
     </header>
 
     <main class="page-main">
-      <a class="back-link" href="/restaurants">← Բոլոր ռեստորանները</a>
+      <a class="back-link" href="/restaurants" id="back-link">← Բոլոր ռեստորանները</a>
       <p class="field-error" id="form-error" role="alert"></p>
 
       <section class="restaurant-hero" id="restaurant-hero" hidden>
@@ -60,7 +61,12 @@
             <li><span aria-hidden="true">🕒</span> <span id="r-hours"></span></li>
             <li><span aria-hidden="true">📍</span> <span id="r-address"></span></li>
             <li><span aria-hidden="true">📞</span> <span id="r-phone"></span></li>
+            <li><span aria-hidden="true">🗺️</span> <span id="r-region"></span></li>
           </ul>
+          <div class="hero-actions">
+            <a class="btn-pill primary" id="r-book" href="/book">🪑 Ամրագրել սեղան</a>
+            <a class="btn-pill ghost light" href="#menu-layout">🍽️ Դիտել մենյուն</a>
+          </div>
         </div>
       </section>
 

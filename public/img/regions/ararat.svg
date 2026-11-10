@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Արարատ">
+<title>Արարատ</title>
+<defs><linearGradient id="ara-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6a77a"/><stop offset="0.5" stop-color="#fbd1a2"/><stop offset="1" stop-color="#fde9c9"/></linearGradient>
+  <linearGradient id="ararat-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
+</defs>
+
+  <rect width="800" height="500" fill="url(#ara-sky)"/>
+  <circle cx="120" cy="150" r="78" fill="#ffcf96" opacity="0.35"/>
+  <circle cx="120" cy="150" r="48" fill="#ffcf96" opacity="0.45"/>
+  <circle cx="120" cy="150" r="30" fill="#fff4d8"/>
+  <path d="M160 340 L400 110 Q420 96 440 110 L610 268 L660 250 L700 226 Q712 220 724 226 L800 280 L800 360 L160 360 Z" fill="#b88c8c"/>
+  <path d="M352 156 L400 110 Q420 96 440 110 L486 152 L466 160 L446 146 L428 168 L410 148 L388 166 L372 152 Z" fill="#fff8f0"/>
+  <path d="M690 234 L700 226 Q712 220 724 226 L738 236 L724 242 L712 232 L700 242 Z" fill="#fff8f0"/>
+  <path d="M0 500 L0 360 Q0 360 100 352.5 Q200 345 300 350.5 Q400 356 500 348 Q600 340 700 346 T800 352 L800 500 Z" fill="#c79b6b" />
+  <rect y="365" width="800" height="135" fill="#7aa04f"/>
+  <path d="M-20 390 Q400 350 820 390" fill="none" stroke="#4c7a30" stroke-width="7" stroke-linecap="round" stroke-dasharray="10 6"/><path d="M-20 405 Q400 363 820 405" fill="none" stroke="#5f8f3d" stroke-width="8" stroke-linecap="round" stroke-dasharray="12 7"/><path d="M-20 420 Q400 376 820 420" fill="none" stroke="#4c7a30" stroke-width="9" stroke-linecap="round" stroke-dasharray="14 8"/><path d="M-20 435 Q400 389 820 435" fill="none" stroke="#5f8f3d" stroke-width="10" stroke-linecap="round" stroke-dasharray="16 9"/><path d="M-20 450 Q400 402 820 450" fill="none" stroke="#4c7a30" stroke-width="11" stroke-linecap="round" stroke-dasharray="18 10"/><path d="M-20 465 Q400 415 820 465" fill="none" stroke="#5f8f3d" stroke-width="12" stroke-linecap="round" stroke-dasharray="20 11"/><path d="M-20 480 Q400 428 820 480" fill="none" stroke="#4c7a30" stroke-width="13" stroke-linecap="round" stroke-dasharray="22 12"/><path d="M-20 495 Q400 441 820 495" fill="none" stroke="#5f8f3d" stroke-width="14" stroke-linecap="round" stroke-dasharray="24 13"/><path d="M-20 510 Q400 454 820 510" fill="none" stroke="#4c7a30" stroke-width="15" stroke-linecap="round" stroke-dasharray="26 14"/>
+  <rect x="67.6" y="364" width="4.8" height="18" fill="#5b4636"/>
+  <circle cx="70" cy="352" r="20" fill="#4f7d3c"/><rect x="737.12" y="358.4" width="5.76" height="21.6" fill="#5b4636"/>
+  <circle cx="740" cy="344" r="24" fill="#4f7d3c"/>
+<rect width="800" height="500" fill="url(#ararat-shade)"/>
+</svg>

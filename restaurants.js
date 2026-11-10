@@ -13,9 +13,12 @@ const {
   MESSAGES
 } = require("./public/validation.js");
 const { DEFAULT_SETTINGS } = require("./db/seed.js");
+const { REGIONS, regionById, regionImage } = require("./public/regions.js");
 
 const CATEGORIES = ["starter", "salad", "main", "dessert", "drink"];
-const IMAGES = ["cafe-bar.jpg", "cafe-interior.jpg", "cafe-table.jpg", "coffee-friends.jpg"];
+// Լուսանկարներ և մարզերի նկարազարդումներ (public/img/regions/*.svg)
+const IMAGES = ["cafe-bar.jpg", "cafe-interior.jpg", "cafe-table.jpg", "coffee-friends.jpg"]
+  .concat(REGIONS.map((r) => regionImage(r.id)));
 const STATUSES = ["pending", "confirmed", "rejected", "cancelled"];
 
 const ADMIN_TEXT = {
@@ -46,6 +49,8 @@ function validateRestaurant(input) {
     phone: clean(input.phone),
     hours: clean(input.hours),
     image: clean(input.image),
+    region: clean(input.region),
+    city: clean(input.city),
     rating: Number(input.rating),
     is_active: input.is_active === false || input.is_active === 0 || input.is_active === "0" ? 0 : 1
   };
@@ -58,6 +63,9 @@ function validateRestaurant(input) {
   if (data.phone.length > 30) errors.phone = "Հեռախոսը՝ առավելագույնը 30 նիշ";
   if (data.hours.length > 40) errors.hours = "Աշխատանքային ժամերը՝ առավելագույնը 40 նիշ";
   if (!IMAGES.includes(data.image)) data.image = IMAGES[1];
+  const region = regionById(data.region);
+  if (!region) errors.region = "Ընտրեք մարզը";
+  else if (!region.cities.includes(data.city)) errors.city = "Ընտրեք քաղաքը";
   if (!Number.isFinite(data.rating) || data.rating < 0 || data.rating > 5) errors.rating = "Վարկանիշը՝ 0-ից 5";
   else data.rating = Math.round(data.rating * 10) / 10;
   return { data, errors };
@@ -88,7 +96,7 @@ function hasErrors(errors) {
 
 // ---------- Մոդուլ ----------
 
-module.exports = function setupRestaurants(app, db, { requireUser, startSession }) {
+module.exports = function setupRestaurants(app, db, { requireUser, startSession, tables }) {
   // ----- Վճարման սյունակներ (հին բազաներում դեռ չկան) -----
   const PAYMENT_COLUMNS = {
     payment_method: "TEXT NOT NULL DEFAULT 'cash'",
@@ -136,10 +144,10 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
       GROUP BY r.id ORDER BY r.id DESC`),
     restaurant: db.prepare("SELECT * FROM restaurants WHERE id = ?"),
     insertRestaurant: db.prepare(
-      "INSERT INTO restaurants (name, cuisine, description, address, phone, hours, image, rating, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO restaurants (name, cuisine, description, address, phone, hours, image, rating, is_active, region, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     ),
     updateRestaurant: db.prepare(
-      "UPDATE restaurants SET name = ?, cuisine = ?, description = ?, address = ?, phone = ?, hours = ?, image = ?, rating = ?, is_active = ? WHERE id = ?"
+      "UPDATE restaurants SET name = ?, cuisine = ?, description = ?, address = ?, phone = ?, hours = ?, image = ?, rating = ?, is_active = ?, region = ?, city = ? WHERE id = ?"
     ),
     deleteRestaurant: db.prepare("DELETE FROM restaurants WHERE id = ?"),
 
@@ -220,7 +228,7 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
   // ----- Օգնականներ -----
   function settingsObject() {
     const out = { ...DEFAULT_SETTINGS };
-    for (const row of q.settings.all()) out[row.key] = row.value;
+    for (const row of q.settings.all()) if (row.key in DEFAULT_SETTINGS) out[row.key] = row.value;
     return out;
   }
 
@@ -234,6 +242,9 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
       phone: r.phone,
       hours: r.hours,
       image: r.image,
+      region: r.region || "",
+      region_name: regionById(r.region) ? regionById(r.region).name : "",
+      city: r.city || "",
       rating: Number(r.rating),
       is_active: Number(r.is_active) === 1,
       item_count: r.item_count === undefined ? undefined : Number(r.item_count),
@@ -510,13 +521,15 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
   });
 
   app.get("/api/admin/restaurants", requireAdmin, (req, res) => {
-    res.json({ restaurants: q.allRestaurants.all().map(publicRestaurant), images: IMAGES });
+    res.json({ restaurants: q.allRestaurants.all().map(publicRestaurant), images: IMAGES, regions: REGIONS });
   });
 
   app.post("/api/admin/restaurants", requireAdmin, (req, res) => {
     const { data, errors } = validateRestaurant(req.body || {});
     if (hasErrors(errors)) return res.status(400).json({ errors });
-    const result = q.insertRestaurant.run(data.name, data.cuisine, data.description, data.address, data.phone, data.hours, data.image, data.rating, data.is_active);
+    const result = q.insertRestaurant.run(data.name, data.cuisine, data.description, data.address, data.phone, data.hours, data.image, data.rating, data.is_active, data.region, data.city);
+    // Նոր ռեստորանը միանգամից ստանում է օրինակային սեղաններ, որ հնարավոր լինի ամրագրել
+    if (tables) tables.ensureTables(Number(result.lastInsertRowid));
     res.status(201).json({ restaurant: publicRestaurant(q.restaurant.get(Number(result.lastInsertRowid))) });
   });
 
@@ -525,7 +538,7 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
     if (!id || !q.restaurant.get(id)) return res.status(404).json({ errors: { form: "Ռեստորանը չի գտնվել" } });
     const { data, errors } = validateRestaurant(req.body || {});
     if (hasErrors(errors)) return res.status(400).json({ errors });
-    q.updateRestaurant.run(data.name, data.cuisine, data.description, data.address, data.phone, data.hours, data.image, data.rating, data.is_active, id);
+    q.updateRestaurant.run(data.name, data.cuisine, data.description, data.address, data.phone, data.hours, data.image, data.rating, data.is_active, data.region, data.city, id);
     res.json({ restaurant: publicRestaurant(q.restaurant.get(id)) });
   });
 

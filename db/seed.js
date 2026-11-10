@@ -2,6 +2,9 @@
 // Բոլոր անունները, հասցեները և հեռախոսները հորինված են։
 // Ռեստորանները ավելացվում են միայն այն դեպքում, երբ restaurants աղյուսակը դատարկ է։
 
+const { REGIONS } = require("../public/regions.js");
+const { seedRegions } = require("./seed-regions.js");
+
 const DEFAULT_SETTINGS = {
   hero_eyebrow: "🍷 Սեղան, ճաշացանկ և լավ երեկո",
   hero_title: "Ամրագրեք սեղան և կազմեք ձեր երեկոյի ճաշացանկը",
@@ -102,7 +105,47 @@ const RESTAURANTS = [
   }
 ];
 
+function addColumn(db, table, name, type) {
+  const columns = db.prepare("PRAGMA table_info(" + table + ")").all().map((c) => c.name);
+  if (!columns.includes(name)) db.exec("ALTER TABLE " + table + " ADD COLUMN " + name + " " + type);
+}
+
+// Հին բազաներում ավելացնում ենք մարզը, քաղաքը և սեղանի ռեստորանը
+function migrate(db) {
+  addColumn(db, "restaurants", "region", "TEXT NOT NULL DEFAULT ''");
+  addColumn(db, "restaurants", "city", "TEXT NOT NULL DEFAULT ''");
+  addColumn(db, "cafe_tables", "restaurant_id", "INTEGER REFERENCES restaurants(id) ON DELETE CASCADE");
+  db.exec("CREATE INDEX IF NOT EXISTS restaurants_region ON restaurants (region, city)");
+  db.exec("CREATE INDEX IF NOT EXISTS cafe_tables_restaurant ON cafe_tables (restaurant_id)");
+}
+
+// Մարզ չունեցող ռեստորանների մարզը որոշում ենք հասցեի քաղաքով, լռելյայն՝ Երևան
+function fillRegions(db) {
+  const rows = db.prepare("SELECT id, address FROM restaurants WHERE region = '' OR city = ''").all();
+  const update = db.prepare("UPDATE restaurants SET region = ?, city = ? WHERE id = ?");
+  for (const row of rows) {
+    let region = REGIONS[0];
+    let city = REGIONS[0].center;
+    for (const r of REGIONS) {
+      const found = r.cities.find((c) => String(row.address).includes(c));
+      if (found) {
+        region = r;
+        city = found;
+        break;
+      }
+    }
+    update.run(region.id, city, row.id);
+  }
+}
+
 function seedDatabase(db) {
+  migrate(db);
+  seedBase(db);
+  fillRegions(db);
+  seedRegions(db);
+}
+
+function seedBase(db) {
   const insertSetting = db.prepare("INSERT OR IGNORE INTO site_settings (key, value) VALUES (?, ?)");
   for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) insertSetting.run(key, value);
 

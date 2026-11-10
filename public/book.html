@@ -11,6 +11,7 @@
   <script src="/theme.js"></script>
   <script src="/cart-store.js" defer></script>
   <script src="/validation.js" defer></script>
+  <script src="/regions.js" defer></script>
   <script src="/auth.js" defer></script>
   <script src="/fields.js" defer></script>
   <script src="/time-picker.js" defer></script>
@@ -52,9 +53,24 @@
     <main class="auth-page">
       <div class="auth-card">
         <h1>Ամրագրել սեղան</h1>
-        <p class="lead">Ընտրեք օրը, ժամը և հյուրերի քանակը։ Սրճարանը կհաստատի ձեր ամրագրումը։</p>
+        <p class="lead">Ընտրեք ռեստորանը, օրը, ժամը և հյուրերի քանակը։ Ռեստորանը կհաստատի ձեր ամրագրումը։</p>
+
+        <div class="book-place" id="book-place" hidden>
+          <div class="book-place-text">
+            <span id="bp-city"></span>
+            <strong id="bp-name"></strong>
+            <a id="bp-menu" href="/restaurants">Դիտել մենյուն →</a>
+          </div>
+        </div>
 
         <form class="book-form" novalidate>
+          <div class="field">
+            <label for="book-restaurant">Ռեստորան</label>
+            <select id="book-restaurant" name="restaurant_id" aria-describedby="restaurant_id-error" required>
+              <option value="">Ընտրեք ռեստորանը</option>
+            </select>
+            <p class="field-error" id="restaurant_id-error"></p>
+          </div>
           <div class="field-row">
             <div class="field">
               <label for="book-date">Օր</label>

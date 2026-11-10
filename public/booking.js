@@ -46,13 +46,64 @@ document.addEventListener("DOMContentLoaded", function () {
   // ---------- Ամրագրման ձև ----------
 
   if (form) {
+    const R = window.TablebookRegions;
+    const restaurantSelect = form.elements.restaurant_id;
+    let restaurants = [];
+
+    // Ռեստորանները խմբավորված ըստ մարզի և քաղաքի
+    function fillRestaurants(selectedId) {
+      for (const region of R.REGIONS) {
+        const list = restaurants.filter(function (r) { return r.region === region.id; });
+        if (list.length === 0) continue;
+        const group = document.createElement("optgroup");
+        group.label = R.regionTitle(region);
+        for (const r of list) {
+          const option = document.createElement("option");
+          option.value = String(r.id);
+          option.textContent = r.name + " · " + r.city;
+          group.append(option);
+        }
+        restaurantSelect.append(group);
+      }
+      if (selectedId && restaurants.some(function (r) { return String(r.id) === selectedId; })) {
+        restaurantSelect.value = selectedId;
+      }
+      showPlace();
+    }
+
+    // Ընտրված ռեստորանի փոքր քարտը՝ նկարով
+    function showPlace() {
+      const r = restaurants.find(function (x) { return String(x.id) === restaurantSelect.value; });
+      const box = document.getElementById("book-place");
+      box.hidden = !r;
+      if (!r) return;
+      box.style.setProperty("--cover", "url('/img/" + r.image + "')");
+      const region = R.regionById(r.region);
+      document.getElementById("bp-city").textContent = "📍 " + r.city + (region && region.id !== "yerevan" ? " · " + R.regionTitle(region) : "");
+      document.getElementById("bp-name").textContent = r.name;
+      document.getElementById("bp-menu").href = "/restaurant?id=" + r.id;
+      history.replaceState(null, "", "/book?restaurant=" + r.id);
+    }
+
+    restaurantSelect.addEventListener("change", showPlace);
+
     // Անցած ժամերը չեն ցուցադրվում, իսկ ընտրված սեղանի զբաղված ժամերը անջատված են
-    window.TablebookTimePicker.connect({
+    const picker = window.TablebookTimePicker.connect({
       dateInput: form.elements.date,
       tableSelect: form.elements.table_id,
       grid: document.getElementById("book-time"),
-      guests: form.elements.guests
+      guests: form.elements.guests,
+      restaurant: restaurantSelect
     });
+
+    fetch("/api/restaurants")
+      .then(function (res) { return res.json(); })
+      .then(function (body) {
+        restaurants = body.restaurants || [];
+        fillRestaurants(new URLSearchParams(window.location.search).get("restaurant"));
+        if (restaurantSelect.value) picker.set({ date: form.elements.date.value });
+      })
+      .catch(function () {});
 
     function showErrors(errors) {
       for (const box of form.querySelectorAll(".field-error")) box.textContent = "";
@@ -83,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const input = Object.fromEntries(new FormData(form));
 
       const check = V.validateReservation(input, new Date());
+      if (!input.restaurant_id) check.errors.restaurant_id = V.MESSAGES.restaurantEmpty;
       if (!input.table_id) check.errors.table_id = V.MESSAGES.tableEmpty;
       if (Object.keys(check.errors).length > 0) {
         showErrors(check.errors);
@@ -165,6 +217,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const status = document.createElement("span");
       status.className = "status res-" + r.status;
       status.textContent = STATUS_TEXT[r.status] || r.status;
+      if (r.restaurant_name) {
+        const place = document.createElement("strong");
+        place.className = "res-place";
+        place.textContent = "🍽️ " + r.restaurant_name + (r.restaurant_city ? " · 📍 " + r.restaurant_city : "");
+        info.append(place);
+      }
       info.append(guests, status);
       if (r.note) {
         const note = document.createElement("p");

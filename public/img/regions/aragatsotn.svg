@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Արագածոտն">
+<title>Արագածոտն</title>
+<defs><linearGradient id="ar-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fc9e8"/><stop offset="0.6" stop-color="#d7ecf4"/><stop offset="1" stop-color="#f4f1e4"/></linearGradient>
+  <linearGradient id="aragatsotn-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
+</defs>
+
+  <rect width="800" height="500" fill="url(#ar-sky)"/>
+  <circle cx="150" cy="95" r="62.400000000000006" fill="#fff1c4" opacity="0.35"/>
+  <circle cx="150" cy="95" r="38.400000000000006" fill="#fff1c4" opacity="0.45"/>
+  <circle cx="150" cy="95" r="24" fill="#fffbe8"/>
+  <path d="M0 500 L0 300 L170 230 L260 150 L300 175 L345 120 L390 160 L430 110 L475 165 L520 140 L610 220 L800 280 L800 500 Z" fill="#7f97ad" />
+  <path d="M232 180 L260 150 L300 175 L345 120 L390 160 L430 110 L475 165 L520 140 L552 172 L520 168 L500 184 L475 172 L452 188 L430 150 L408 182 L390 170 L365 186 L345 148 L322 184 L300 186 L280 176 L258 190 Z" fill="#ffffff"/>
+  <path d="M0 500 L0 330 Q0 330 70 315 Q140 300 220 310 Q300 320 380 308 Q460 296 540 307 Q620 318 710 309 T800 300 L800 500 Z" fill="#8fb37a" />
+  <path d="M0 500 L0 380 Q0 380 100 366 Q200 352 290 362 Q380 372 470 361 Q560 350 680 359 T800 368 L800 500 Z" fill="#6f9f5e" />
+  <g fill="#5b5b55">
+    <path d="M560 352 L560 318 L572 318 L572 310 L584 310 L584 318 L604 318 L604 300 L616 300 L616 318 L640 318 L640 312 L652 312 L652 352 Z"/>
+  </g>
+  <path d="M0 500 L0 430 Q0 430 120 420 Q240 410 360 419 Q480 428 640 416 T800 404 L800 500 Z" fill="#4f8450" />
+  <circle cx="60" cy="460" r="4" fill="#f2c14e"/><circle cx="90" cy="470" r="4" fill="#e86f6f"/><circle cx="140" cy="480" r="4" fill="#ffffff"/><circle cx="220" cy="460" r="4" fill="#f2c14e"/><circle cx="300" cy="470" r="4" fill="#e86f6f"/><circle cx="360" cy="480" r="4" fill="#ffffff"/><circle cx="420" cy="460" r="4" fill="#f2c14e"/><circle cx="500" cy="470" r="4" fill="#e86f6f"/><circle cx="700" cy="480" r="4" fill="#ffffff"/><circle cx="740" cy="460" r="4" fill="#f2c14e"/>
+<rect width="800" height="500" fill="url(#aragatsotn-shade)"/>
+</svg>

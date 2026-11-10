@@ -12,6 +12,7 @@
   <script src="/theme.js"></script>
   <script src="/cart-store.js" defer></script>
   <script src="/validation.js" defer></script>
+  <script src="/regions.js" defer></script>
   <script src="/fields.js" defer></script>
   <script src="/time-picker.js" defer></script>
   <script src="/admin.js" defer></script>
@@ -92,9 +93,14 @@
       <section class="admin-tab" id="tab-tables" hidden>
         <div class="admin-head">
           <h1>Սեղաններ</h1>
-          <button class="btn-pill primary" type="button" id="add-table">+ Նոր սեղան</button>
+          <div class="filters">
+            <select id="table-restaurant" aria-label="Ռեստորան">
+              <option value="">Բոլոր ռեստորանները</option>
+            </select>
+            <button class="btn-pill primary" type="button" id="add-table">+ Նոր սեղան</button>
+          </div>
         </div>
-        <p class="muted">Հաճախորդը ամրագրելիս ընտրում է այս սեղաններից։ Նույն սեղանը կարելի է նորից ամրագրել նախորդ ամրագրումից առնվազն 1 ժամ հետո։</p>
+        <p class="muted">Յուրաքանչյուր ռեստորան ունի իր սեղանները. հաճախորդը ամրագրելիս ընտրում է ռեստորանը, ապա սեղանը։ Նույն սեղանը կարելի է նորից ամրագրել նախորդ ամրագրումից առնվազն 1 ժամ հետո։</p>
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead>
@@ -114,7 +120,7 @@
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead>
-              <tr><th>Ռեստորան</th><th>Խոհանոց</th><th>Ուտեստ</th><th>Վարկանիշ</th><th>Կարգավիճակ</th><th><span class="visually-hidden">Գործողություններ</span></th></tr>
+              <tr><th>Ռեստորան</th><th>Քաղաք</th><th>Խոհանոց</th><th>Ուտեստ</th><th>Վարկանիշ</th><th>Կարգավիճակ</th><th><span class="visually-hidden">Գործողություններ</span></th></tr>
             </thead>
             <tbody id="restaurant-rows"></tbody>
           </table>
@@ -172,6 +178,10 @@
         <div class="field"><label for="r-phone-in">Հեռախոս</label><input id="r-phone-in" name="phone" maxlength="30"><p class="field-error" id="r-phone-error"></p></div>
       </div>
       <div class="field-row">
+        <div class="field"><label for="r-region-in">Մարզ *</label><select id="r-region-in" name="region" required></select><p class="field-error" id="r-region-error"></p></div>
+        <div class="field"><label for="r-city-in">Քաղաք *</label><select id="r-city-in" name="city" required></select><p class="field-error" id="r-city-error"></p></div>
+      </div>
+      <div class="field-row">
         <div class="field"><label for="r-hours-in">Աշխատանքային ժամեր</label><input id="r-hours-in" name="hours" maxlength="40" placeholder="12:00 – 23:00"><p class="field-error" id="r-hours-error"></p></div>
         <div class="field"><label for="r-image-in">Նկար</label><select id="r-image-in" name="image"></select></div>
       </div>
@@ -211,6 +221,7 @@
   <dialog class="admin-dialog" id="table-dialog" aria-labelledby="td-title">
     <form method="dialog" class="admin-form" id="table-form" novalidate>
       <h2 id="td-title">Նոր սեղան</h2>
+      <div class="field"><label for="t-restaurant-in">Ռեստորան *</label><select id="t-restaurant-in" name="restaurant_id" required></select><p class="field-error" id="t-restaurant_id-error"></p></div>
       <div class="field-row">
         <div class="field"><label for="t-name-in">Անուն *</label><input id="t-name-in" name="name" maxlength="60" placeholder="Օր.՝ Սեղան 7 · տեռաս" required><p class="field-error" id="t-name-error"></p></div>
         <div class="field"><label for="t-seats-in">Տեղերի քանակ *</label><input id="t-seats-in" name="seats" type="text" inputmode="numeric" maxlength="2" autocomplete="off" data-digits value="4" required><p class="field-error" id="t-seats-error"></p></div>

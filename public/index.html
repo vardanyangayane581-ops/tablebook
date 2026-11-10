@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/style.css">
   <script src="/theme.js"></script>
   <script src="/cart-store.js" defer></script>
+  <script src="/regions.js"></script>
   <script src="/auth.js" defer></script>
 </head>
 <body class="page-home">
@@ -121,6 +122,16 @@
     </div>
 
     <p class="announcement" id="announcement" hidden></p>
+
+    <!-- Մարզեր՝ նկարազարդումներով (յուրաքանչյուրը բացում է մարզի ռեստորանները) -->
+    <section aria-labelledby="regions-home-title">
+      <div class="section-head">
+        <h2 id="regions-home-title">Ճամփորդեք Հայաստանով</h2>
+        <a class="see-all" href="/restaurants">Բոլոր մարզերը →</a>
+      </div>
+      <p class="section-lead">Սևանի ափից մինչև Դիլիջանի անտառներ. ընտրեք մարզը և ամրագրեք սեղան ձեր հաջորդ ուղևորության համար։</p>
+      <div class="region-grid" id="home-regions"></div>
+    </section>
 
     <!-- Լավագույն ռեստորանները (բեռնվում են սերվերից) -->
     <section aria-labelledby="featured-title">
@@ -398,6 +409,26 @@
     }).catch(function () {});
 
     fetch("/api/restaurants").then(function (r) { return r.json(); }).then(function (b) {
+      // Մարզերի քարտեր
+      const R = window.TablebookRegions;
+      const regionsBox = document.getElementById("home-regions");
+      for (const region of R.REGIONS) {
+        const count = (b.restaurants || []).filter(function (r) { return r.region === region.id; }).length;
+        const a = document.createElement("a");
+        a.className = "region-card";
+        a.href = "/restaurants?region=" + region.id;
+        a.style.setProperty("--art", "url('/img/" + R.regionImage(region.id) + "')");
+        const text = document.createElement("span");
+        text.className = "region-card-text";
+        const name = document.createElement("strong");
+        name.textContent = region.name;
+        const sub = document.createElement("span");
+        sub.textContent = "📍 " + region.center + " · " + count + " վայր";
+        text.append(name, sub);
+        a.append(text);
+        regionsBox.append(a);
+      }
+
       const box = document.getElementById("featured");
       for (const r of (b.restaurants || []).slice(0, 3)) {
         const a = document.createElement("a");

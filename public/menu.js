@@ -83,16 +83,86 @@ document.addEventListener("DOMContentLoaded", function () {
     const search = document.getElementById("search");
     const chips = document.getElementById("cuisine-chips");
     const noResults = document.getElementById("no-results");
+    const Regions = window.TablebookRegions;
+    const params = new URLSearchParams(window.location.search);
     let all = [];
     let cuisine = "";
+    let region = Regions.regionById(params.get("region")) ? params.get("region") : "";
+    let city = params.get("city") || "";
+
+    function placeWord(n) {
+      return n + " վայր";
+    }
+
+    // Ընտրված մարզն ու քաղաքը պահում ենք հասցեում, որ էջը թարմացնելիս կամ հետ գալիս չկորեն
+    function saveUrl() {
+      const p = new URLSearchParams();
+      if (region) p.set("region", region);
+      if (city) p.set("city", city);
+      history.replaceState(null, "", "/restaurants" + (p.toString() ? "?" + p : ""));
+    }
+
+    function renderRegions() {
+      const box = document.getElementById("region-grid");
+      box.replaceChildren.apply(box, Regions.REGIONS.map(function (r) {
+        const count = all.filter(function (x) { return x.region === r.id; }).length;
+        const b = el("button", "region-card");
+        b.type = "button";
+        b.setAttribute("aria-pressed", String(r.id === region));
+        b.style.setProperty("--art", "url('/img/" + Regions.regionImage(r.id) + "')");
+        const text = el("span", "region-card-text");
+        text.append(el("strong", "", r.name), el("span", "", "📍 " + r.center + " · " + placeWord(count)));
+        b.append(text);
+        b.addEventListener("click", function () {
+          region = region === r.id ? "" : r.id;
+          city = "";
+          update();
+          if (region) document.getElementById("region-hero").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        return b;
+      }));
+      document.getElementById("all-regions").hidden = !region;
+    }
+
+    function renderHero() {
+      const hero = document.getElementById("region-hero");
+      const r = Regions.regionById(region);
+      hero.hidden = !r;
+      if (!r) return;
+      hero.style.setProperty("--art", "url('/img/" + Regions.regionImage(r.id) + "')");
+      document.getElementById("rh-kicker").textContent = r.id === "yerevan"
+        ? "🏙️ Մայրաքաղաք"
+        : "🗺️ " + Regions.regionTitle(r) + " · կենտրոն՝ " + r.center;
+      document.getElementById("rh-name").textContent = r.name;
+      document.getElementById("rh-tagline").textContent = r.tagline;
+
+      const chipsBox = document.getElementById("city-chips");
+      const inRegion = all.filter(function (x) { return x.region === r.id; });
+      const cities = [""].concat(r.cities);
+      chipsBox.hidden = r.cities.length < 2;
+      chipsBox.replaceChildren.apply(chipsBox, cities.map(function (name) {
+        const n = inRegion.filter(function (x) { return !name || x.city === name; }).length;
+        const b = el("button", "chip", (name || "Բոլոր քաղաքները") + " · " + n);
+        b.type = "button";
+        b.disabled = n === 0;
+        b.setAttribute("aria-pressed", String(name === city));
+        b.addEventListener("click", function () {
+          city = name;
+          update();
+        });
+        return b;
+      }));
+    }
 
     function card(r) {
-      const a = el("a", "restaurant-card");
-      a.href = "/restaurant?id=" + r.id;
+      const article = el("article", "restaurant-card");
+      const link = el("a", "rc-link");
+      link.href = "/restaurant?id=" + r.id;
       const cover = el("div", "rc-cover");
       cover.style.backgroundImage = "url('/img/" + r.image + "')";
       const rating = el("span", "rc-rating", "⭐ " + r.rating.toFixed(1));
       cover.append(rating);
+      if (r.city) cover.append(el("span", "rc-place", "📍 " + r.city + (r.region_name && r.region_name !== r.city ? " · " + r.region_name : "")));
       const content = el("div", "rc-body");
       content.append(
         el("span", "rc-cuisine", r.cuisine),
@@ -104,23 +174,48 @@ document.addEventListener("DOMContentLoaded", function () {
         el("span", "", "🕒 " + r.hours),
         el("span", "", r.item_count + " ուտեստ" + (r.min_price !== null ? " · " + Cart.money(r.min_price) + "-ից" : ""))
       );
-      content.append(meta, el("span", "rc-cta", "Դիտել մենյուն →"));
-      a.append(cover, content);
-      return a;
+      content.append(meta);
+      link.append(cover, content);
+
+      const actions = el("div", "rc-actions");
+      const menuLink = el("a", "btn-pill ghost small", "🍽️ Մենյու");
+      menuLink.href = "/restaurant?id=" + r.id;
+      const bookLink = el("a", "btn-pill primary small", "🪑 Ամրագրել");
+      bookLink.setAttribute("aria-label", "Ամրագրել սեղան՝ " + r.name);
+      bookLink.href = "/book?restaurant=" + r.id;
+      actions.append(menuLink, bookLink);
+      article.append(link, actions);
+      return article;
     }
 
     function render() {
       const term = search.value.trim().toLowerCase();
       const list = all.filter(function (r) {
-        const text = (r.name + " " + r.cuisine + " " + r.description + " " + r.address).toLowerCase();
-        return (!cuisine || r.cuisine === cuisine) && (!term || text.includes(term));
+        const text = (r.name + " " + r.cuisine + " " + r.description + " " + r.address + " " + r.city + " " + r.region_name).toLowerCase();
+        return (!region || r.region === region) && (!city || r.city === city) &&
+          (!cuisine || r.cuisine === cuisine) && (!term || text.includes(term));
       });
       grid.replaceChildren.apply(grid, list.map(card));
       noResults.hidden = list.length > 0;
+      const r = Regions.regionById(region);
+      document.getElementById("list-title").textContent = city
+        ? Regions.genitive(city) + " ռեստորանները"
+        : r ? Regions.genitive(Regions.regionTitle(r)) + " ռեստորանները" : "Բոլոր ռեստորանները";
+      document.getElementById("list-count").textContent = placeWord(list.length);
+    }
+
+    function update() {
+      saveUrl();
+      renderRegions();
+      renderHero();
+      renderChips();
+      render();
     }
 
     function renderChips() {
-      const names = [""].concat(Array.from(new Set(all.map(function (r) { return r.cuisine; }))));
+      const pool = all.filter(function (r) { return (!region || r.region === region) && (!city || r.city === city); });
+      const names = [""].concat(Array.from(new Set(pool.map(function (r) { return r.cuisine; }))));
+      if (cuisine && names.indexOf(cuisine) === -1) cuisine = "";
       chips.replaceChildren.apply(chips, names.map(function (name) {
         const b = el("button", "chip", name || "Բոլորը");
         b.type = "button";
@@ -135,13 +230,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     search.addEventListener("input", render);
+    document.getElementById("all-regions").addEventListener("click", function () {
+      region = "";
+      city = "";
+      update();
+    });
 
     getJSON("/api/restaurants")
       .then(function (res) {
         if (!res.ok) throw new Error();
         all = res.data.restaurants;
-        renderChips();
-        render();
+        const r = Regions.regionById(region);
+        if (!r || r.cities.indexOf(city) === -1) city = "";
+        update();
       })
       .catch(function () {
         grid.replaceChildren();
@@ -248,6 +349,17 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("r-hours").textContent = restaurant.hours;
         document.getElementById("r-address").textContent = restaurant.address;
         document.getElementById("r-phone").textContent = restaurant.phone;
+        const R = window.TablebookRegions;
+        const region = R ? R.regionById(restaurant.region) : null;
+        document.getElementById("r-region").textContent = region && region.id !== "yerevan"
+          ? restaurant.city + ", " + R.regionTitle(region)
+          : restaurant.city || "Երևան";
+        document.getElementById("r-book").href = "/book?restaurant=" + restaurant.id;
+        if (restaurant.region) {
+          const back = document.getElementById("back-link");
+          back.href = "/restaurants?region=" + encodeURIComponent(restaurant.region);
+          back.textContent = "← " + (restaurant.region_name || "Բոլոր") + " · բոլոր ռեստորանները";
+        }
         hero.hidden = false;
         document.getElementById("menu-layout").hidden = false;
         renderMenu();

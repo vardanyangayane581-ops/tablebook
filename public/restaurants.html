@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/style.css">
   <script src="/theme.js"></script>
   <script src="/cart-store.js" defer></script>
+  <script src="/regions.js" defer></script>
   <script src="/auth.js" defer></script>
   <script src="/menu.js" defer></script>
 </head>
@@ -47,9 +48,31 @@
 
     <main class="page-main">
       <div class="page-intro">
-        <span class="eyebrow">🍽️ Ընտրեք ձեր երեկոյի վայրը</span>
-        <h1>Ռեստորաններ</h1>
-        <p>Բացեք ռեստորանը, ծանոթացեք մենյուին և ավելացրեք ուտեստները զամբյուղ։</p>
+        <span class="eyebrow">🗺️ Ամբողջ Հայաստանով</span>
+        <h1>Ռեստորաններ և սրճարաններ</h1>
+        <p>Ընտրեք մարզը, ապա քաղաքը, բացեք ռեստորանը, ծանոթացեք մենյուին և ամրագրեք սեղան։</p>
+      </div>
+
+      <section class="regions" aria-labelledby="regions-title">
+        <div class="section-head">
+          <h2 id="regions-title">Ընտրեք մարզը</h2>
+          <button class="see-all link-btn" type="button" id="all-regions" hidden>Ամբողջ Հայաստանը →</button>
+        </div>
+        <div class="region-grid" id="region-grid" role="group" aria-label="Մարզեր"></div>
+      </section>
+
+      <section class="region-hero" id="region-hero" hidden aria-live="polite">
+        <div class="region-hero-text">
+          <span class="eyebrow" id="rh-kicker"></span>
+          <h2 id="rh-name"></h2>
+          <p id="rh-tagline"></p>
+          <div class="chips city-chips" id="city-chips" role="group" aria-label="Քաղաքներ"></div>
+        </div>
+      </section>
+
+      <div class="list-head" id="list-head">
+        <h2 id="list-title">Բոլոր ռեստորանները</h2>
+        <span class="muted" id="list-count"></span>
       </div>
 
       <div class="toolbar">

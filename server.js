@@ -79,8 +79,10 @@ const activeReservationAt = db.prepare(
   "SELECT 1 FROM reservations WHERE user_id = ? AND date = ? AND time = ? AND status IN ('pending', 'confirmed')"
 );
 const RESERVATION_FIELDS =
-  "SELECT r.id, r.table_id, t.name AS table_name, r.date, r.time, r.guests, r.note, r.status, r.created_at " +
-  "FROM reservations r LEFT JOIN cafe_tables t ON t.id = r.table_id ";
+  "SELECT r.id, r.table_id, t.name AS table_name, t.restaurant_id, rs.name AS restaurant_name, rs.city AS restaurant_city, " +
+  "r.date, r.time, r.guests, r.note, r.status, r.created_at " +
+  "FROM reservations r LEFT JOIN cafe_tables t ON t.id = r.table_id " +
+  "LEFT JOIN restaurants rs ON rs.id = t.restaurant_id ";
 const reservationsOfUser = db.prepare(
   RESERVATION_FIELDS + "WHERE r.user_id = ? ORDER BY r.date DESC, r.time DESC"
 );
@@ -94,6 +96,9 @@ function publicReservation(row) {
     id: Number(row.id),
     table_id: row.table_id === null ? null : Number(row.table_id),
     table_name: row.table_name || null,
+    restaurant_id: row.restaurant_id === null || row.restaurant_id === undefined ? null : Number(row.restaurant_id),
+    restaurant_name: row.restaurant_name || null,
+    restaurant_city: row.restaurant_city || null,
     date: row.date,
     time: row.time,
     guests: Number(row.guests),
@@ -237,8 +242,11 @@ app.post("/api/reservations", requireUser, (req, res) => {
     return res.status(409).json({ errors: { form: MESSAGES.duplicate } });
   }
 
+  // Սեղանը պետք է պատկանի ընտրված ռեստորանին
   const tableId = Number((req.body || {}).table_id) || null;
-  const tableError = tables.tableError(tableId, data.guests, data.date, data.time);
+  const restaurantId = Number((req.body || {}).restaurant_id) || null;
+  if (!restaurantId) return res.status(400).json({ errors: { restaurant_id: MESSAGES.restaurantEmpty } });
+  const tableError = tables.tableError(tableId, data.guests, data.date, data.time, 0, restaurantId);
   if (tableError) return res.status(409).json({ errors: { table_id: tableError } });
 
   const result = insertReservation.run(req.session.userId, tableId, data.date, data.time, data.guests, data.note);
@@ -267,7 +275,7 @@ app.post("/api/reservations/:id/cancel", requireUser, (req, res) => {
 });
 
 // Ռեստորաններ, մենյու, զամբյուղից պատվերներ և ադմին վահանակ
-const { requireAdmin } = require("./restaurants.js")(app, db, { requireUser, startSession });
+const { requireAdmin } = require("./restaurants.js")(app, db, { requireUser, startSession, tables });
 
 // Սեղաններ, զբաղված ժամեր, ժամի փոփոխություն և բոլոր ամրագրումները ադմին վահանակում
 tables.routes(app, { requireUser, requireAdmin });

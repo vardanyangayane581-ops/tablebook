@@ -5,6 +5,7 @@ const { validateReservation, localDate, toMinutes, MESSAGES, BOOKING } = require
 const STATUSES = ["pending", "confirmed", "rejected", "cancelled"];
 const ACTIVE = ["pending", "confirmed"];
 
+// Յուրաքանչյուր ռեստորան սկզբում ստանում է այս սեղանները (ադմինը կարող է փոխել)
 const DEFAULT_TABLES = [
   ["Սեղան 1 · պատուհանի մոտ", 2],
   ["Սեղան 2 · պատուհանի մոտ", 2],
@@ -29,11 +30,13 @@ function hasErrors(errors) {
 
 function validateTable(input) {
   const data = {
+    restaurant_id: toId(input.restaurant_id),
     name: clean(input.name),
     seats: Number(input.seats),
     is_active: input.is_active === false || input.is_active === 0 || input.is_active === "0" ? 0 : 1
   };
   const errors = {};
+  if (!data.restaurant_id) errors.restaurant_id = "Ընտրեք ռեստորանը";
   if (!data.name) errors.name = "Գրեք սեղանի անունը";
   else if (data.name.length > 60) errors.name = "Անունը՝ առավելագույնը 60 նիշ";
   if (!Number.isInteger(data.seats) || data.seats < 1 || data.seats > BOOKING.maxGuests) {
@@ -50,18 +53,41 @@ module.exports = function setupTables(db) {
   }
   db.exec("CREATE INDEX IF NOT EXISTS reservations_table_date ON reservations (table_id, date)");
 
-  if (Number(db.prepare("SELECT COUNT(*) AS n FROM cafe_tables").get().n) === 0) {
-    const insert = db.prepare("INSERT INTO cafe_tables (name, seats) VALUES (?, ?)");
-    for (const [name, seats] of DEFAULT_TABLES) insert.run(name, seats);
-    console.log("Ավելացվեցին օրինակային սեղաններ");
+  // Հին բազայում սեղանները ընդհանուր էին. դրանք պատկանում են առաջին ռեստորանին
+  const first = db.prepare("SELECT MIN(id) AS id FROM restaurants").get().id;
+  if (first) db.prepare("UPDATE cafe_tables SET restaurant_id = ? WHERE restaurant_id IS NULL").run(first);
+
+  const insertDefault = db.prepare("INSERT INTO cafe_tables (restaurant_id, name, seats) VALUES (?, ?, ?)");
+  const tableCount = db.prepare("SELECT COUNT(*) AS n FROM cafe_tables WHERE restaurant_id = ?");
+
+  // Եթե ռեստորանը դեռ սեղան չունի, ավելացնում ենք օրինակային սեղաններ
+  function ensureTables(restaurantId) {
+    if (Number(tableCount.get(restaurantId).n) > 0) return false;
+    for (const [name, seats] of DEFAULT_TABLES) insertDefault.run(restaurantId, name, seats);
+    return true;
   }
 
+  let added = 0;
+  db.exec("BEGIN");
+  try {
+    for (const r of db.prepare("SELECT id FROM restaurants").all()) if (ensureTables(Number(r.id))) added++;
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+  if (added) console.log("Ավելացվեցին օրինակային սեղաններ " + added + " ռեստորանի համար");
+
   const q = {
-    activeTables: db.prepare("SELECT * FROM cafe_tables WHERE is_active = 1 ORDER BY id"),
-    allTables: db.prepare("SELECT * FROM cafe_tables ORDER BY id"),
+    activeTables: db.prepare("SELECT * FROM cafe_tables WHERE is_active = 1 AND restaurant_id = ? ORDER BY id"),
+    allTables: db.prepare(`
+      SELECT t.*, r.name AS restaurant_name, r.city AS restaurant_city FROM cafe_tables t
+      LEFT JOIN restaurants r ON r.id = t.restaurant_id
+      WHERE (? IS NULL OR t.restaurant_id = ?) ORDER BY t.restaurant_id, t.id`),
     table: db.prepare("SELECT * FROM cafe_tables WHERE id = ?"),
-    insertTable: db.prepare("INSERT INTO cafe_tables (name, seats, is_active) VALUES (?, ?, ?)"),
-    updateTable: db.prepare("UPDATE cafe_tables SET name = ?, seats = ?, is_active = ? WHERE id = ?"),
+    restaurant: db.prepare("SELECT id, name, city, is_active FROM restaurants WHERE id = ?"),
+    insertTable: db.prepare("INSERT INTO cafe_tables (restaurant_id, name, seats, is_active) VALUES (?, ?, ?, ?)"),
+    updateTable: db.prepare("UPDATE cafe_tables SET restaurant_id = ?, name = ?, seats = ?, is_active = ? WHERE id = ?"),
     deleteTable: db.prepare("DELETE FROM cafe_tables WHERE id = ?"),
     futureOfTable: db.prepare(
       "SELECT COUNT(*) AS n FROM reservations WHERE table_id = ? AND date >= ? AND status IN ('pending', 'confirmed')"
@@ -76,10 +102,12 @@ module.exports = function setupTables(db) {
     setReservationStatus: db.prepare("UPDATE reservations SET status = ? WHERE id = ?"),
     moveReservation: db.prepare("UPDATE reservations SET date = ?, time = ?, table_id = ?, status = ? WHERE id = ?"),
     allReservations: db.prepare(`
-      SELECT r.*, t.name AS table_name, u.first_name, u.last_name, u.telephone, u.email
+      SELECT r.*, t.name AS table_name, t.restaurant_id, rs.name AS restaurant_name, rs.city AS restaurant_city,
+             u.first_name, u.last_name, u.telephone, u.email
       FROM reservations r
       JOIN users u ON u.id = r.user_id
       LEFT JOIN cafe_tables t ON t.id = r.table_id
+      LEFT JOIN restaurants rs ON rs.id = t.restaurant_id
       ORDER BY r.created_at DESC LIMIT 200`),
 
     menu: db.prepare("SELECT * FROM evening_menus WHERE id = ?"),
@@ -87,7 +115,24 @@ module.exports = function setupTables(db) {
   };
 
   function publicTable(t) {
-    return { id: Number(t.id), name: t.name, seats: Number(t.seats), is_active: Number(t.is_active) === 1 };
+    const out = {
+      id: Number(t.id),
+      restaurant_id: t.restaurant_id === null ? null : Number(t.restaurant_id),
+      name: t.name,
+      seats: Number(t.seats),
+      is_active: Number(t.is_active) === 1
+    };
+    if (t.restaurant_name !== undefined) {
+      out.restaurant_name = t.restaurant_name || null;
+      out.restaurant_city = t.restaurant_city || null;
+    }
+    return out;
+  }
+
+  // Ամրագրման սեղանի ռեստորանը (ժամը փոխելիս նոր սեղանը պետք է լինի նույն ռեստորանից)
+  function restaurantOfReservation(row) {
+    const table = row && row.table_id ? q.table.get(row.table_id) : null;
+    return table && table.restaurant_id ? Number(table.restaurant_id) : null;
   }
 
   // { [tableId]: ["10:00", "12:30", ...] }
@@ -107,9 +152,13 @@ module.exports = function setupTables(db) {
   }
 
   // Ստուգում է սեղանը նոր ամրագրման կամ ժամի փոփոխության համար։ Վերադարձնում է սխալը կամ null
-  function tableError(tableId, guests, date, time, excludeId) {
+  // restaurantId-ն նշելու դեպքում սեղանը պետք է պատկանի այդ ռեստորանին
+  function tableError(tableId, guests, date, time, excludeId, restaurantId) {
     const table = tableId ? q.table.get(tableId) : null;
     if (!table || Number(table.is_active) !== 1) return MESSAGES.tableEmpty;
+    if (restaurantId && Number(table.restaurant_id) !== restaurantId) return MESSAGES.tableEmpty;
+    const restaurant = table.restaurant_id ? q.restaurant.get(table.restaurant_id) : null;
+    if (!restaurant || Number(restaurant.is_active) !== 1) return MESSAGES.tableEmpty;
     if (guests > Number(table.seats)) return MESSAGES.tableSeats;
     if (isBusy(tableId, date, time, excludeId)) return MESSAGES.tableBusy;
     return null;
@@ -135,6 +184,9 @@ module.exports = function setupTables(db) {
       created_at: r.created_at,
       table_id: r.table_id === null ? null : Number(r.table_id),
       table_name: r.table_name || null,
+      restaurant_id: r.restaurant_id === null || r.restaurant_id === undefined ? null : Number(r.restaurant_id),
+      restaurant_name: r.restaurant_name || null,
+      restaurant_city: r.restaurant_city || null,
       customer: { name: r.first_name + " " + r.last_name, telephone: r.telephone, email: r.email }
     };
   }
@@ -145,8 +197,12 @@ module.exports = function setupTables(db) {
     app.get("/api/availability", (req, res) => {
       const date = clean(req.query.date);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ errors: { date: MESSAGES.dateEmpty } });
+      // Ռեստորանը՝ հարցումից կամ փոխվող ամրագրման սեղանից
+      const excluded = toId(req.query.exclude) ? q.reservation.get(toId(req.query.exclude)) : null;
+      const restaurantId = toId(req.query.restaurant) || restaurantOfReservation(excluded);
       res.json({
-        tables: q.activeTables.all().map(publicTable),
+        restaurant_id: restaurantId,
+        tables: restaurantId ? q.activeTables.all(restaurantId).map(publicTable) : [],
         busy: busyMap(date, toId(req.query.exclude)),
         gap: BOOKING.tableGapMinutes
       });
@@ -167,7 +223,7 @@ module.exports = function setupTables(db) {
       const { data, errors } = validateMove(row, body);
       const tableId = toId(body.table_id);
       if (!errors.date && !errors.time) {
-        const err = tableError(tableId, Number(row.guests), data.date, data.time, id);
+        const err = tableError(tableId, Number(row.guests), data.date, data.time, id, restaurantOfReservation(row));
         if (err) errors.table_id = err;
       }
       if (hasErrors(errors)) return res.status(400).json({ errors });
@@ -179,13 +235,15 @@ module.exports = function setupTables(db) {
     // ---------- Ադմին՝ սեղաններ ----------
 
     app.get("/api/admin/tables", requireAdmin, (req, res) => {
-      res.json({ tables: q.allTables.all().map(publicTable) });
+      const restaurantId = toId(req.query.restaurant);
+      res.json({ tables: q.allTables.all(restaurantId, restaurantId).map(publicTable) });
     });
 
     app.post("/api/admin/tables", requireAdmin, (req, res) => {
       const { data, errors } = validateTable(req.body || {});
+      if (data.restaurant_id && !q.restaurant.get(data.restaurant_id)) errors.restaurant_id = "Ռեստորանը չի գտնվել";
       if (hasErrors(errors)) return res.status(400).json({ errors });
-      const result = q.insertTable.run(data.name, data.seats, data.is_active);
+      const result = q.insertTable.run(data.restaurant_id, data.name, data.seats, data.is_active);
       res.status(201).json({ table: publicTable(q.table.get(Number(result.lastInsertRowid))) });
     });
 
@@ -193,8 +251,9 @@ module.exports = function setupTables(db) {
       const id = toId(req.params.id);
       if (!id || !q.table.get(id)) return res.status(404).json({ errors: { form: "Սեղանը չի գտնվել" } });
       const { data, errors } = validateTable(req.body || {});
+      if (data.restaurant_id && !q.restaurant.get(data.restaurant_id)) errors.restaurant_id = "Ռեստորանը չի գտնվել";
       if (hasErrors(errors)) return res.status(400).json({ errors });
-      q.updateTable.run(data.name, data.seats, data.is_active, id);
+      q.updateTable.run(data.restaurant_id, data.name, data.seats, data.is_active, id);
       res.json({ table: publicTable(q.table.get(id)) });
     });
 
@@ -234,7 +293,7 @@ module.exports = function setupTables(db) {
       const { data, errors } = validateMove(row, body);
       const tableId = toId(body.table_id);
       if (!errors.date && !errors.time) {
-        const err = tableError(tableId, Number(row.guests), data.date, data.time, id);
+        const err = tableError(tableId, Number(row.guests), data.date, data.time, id, restaurantOfReservation(row));
         if (err) errors.table_id = err;
       }
       if (hasErrors(errors)) return res.status(400).json({ errors });
@@ -254,5 +313,5 @@ module.exports = function setupTables(db) {
     });
   }
 
-  return { tableError, routes };
+  return { tableError, ensureTables, routes };
 };

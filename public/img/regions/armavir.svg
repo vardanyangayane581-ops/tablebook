@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Արմավիր">
+<title>Արմավիր</title>
+<defs><linearGradient id="arm-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd27a"/><stop offset="0.55" stop-color="#ffe7b5"/><stop offset="1" stop-color="#fff4dc"/></linearGradient>
+  <linearGradient id="armavir-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
+</defs>
+
+  <rect width="800" height="500" fill="url(#arm-sky)"/>
+  <circle cx="560" cy="170" r="114.4" fill="#ffc85a" opacity="0.35"/>
+  <circle cx="560" cy="170" r="70.4" fill="#ffc85a" opacity="0.45"/>
+  <circle cx="560" cy="170" r="44" fill="#fff7e0"/>
+  <path d="M0 500 L0 300 Q0 300 100 293 Q200 286 310 292 Q420 298 520 289 Q620 280 710 286 T800 292 L800 500 Z" fill="#d9a86a" opacity="0.7"/>
+  <g fill="#8a5532">
+    <rect x="384" y="254" width="72" height="48"/>
+    <path d="M379.2 254 L420 232.4 L460.8 254 Z"/>
+    <rect x="406.8" y="210.8" width="26.4" height="26.4"/>
+    <path d="M403.2 210.8 L420 184.4 L436.8 210.8 Z"/>
+    <rect x="418.8" y="172.4" width="2.4" height="13.2"/>
+    <rect x="415.2" y="176" width="9.6" height="2.4"/>
+  </g>
+  <path d="M0 500 L0 330 Q0 330 90 321 Q180 312 290 319 Q400 326 500 317 Q600 308 700 314 T800 320 L800 500 Z" fill="#e3b44f" />
+  <path d="M0 500 L0 380 Q0 380 130 370 Q260 360 390 369 Q520 378 660 365 T800 352 L800 500 Z" fill="#d39b2f" />
+  <path d="M0 500 L0 440 Q0 440 150 429 Q300 418 450 427 Q600 436 700 428 T800 420 L800 500 Z" fill="#b7832a" />
+  <rect x="86.88" y="349.6" width="6.24" height="23.400000000000002" fill="#5b4636"/>
+  <circle cx="90" cy="334" r="26" fill="#6f9a3c"/><circle cx="74.4" cy="328" r="3.5" fill="#f39a2b"/><circle cx="82.2" cy="338" r="3.5" fill="#f39a2b"/><circle cx="90" cy="328" r="3.5" fill="#f39a2b"/><circle cx="97.80000000000001" cy="338" r="3.5" fill="#f39a2b"/><circle cx="105.60000000000001" cy="328" r="3.5" fill="#f39a2b"/><rect x="167.36" y="341.2" width="5.279999999999999" height="19.8" fill="#5b4636"/>
+  <circle cx="170" cy="328" r="22" fill="#6f9a3c"/><circle cx="156.8" cy="322" r="3.5" fill="#f39a2b"/><circle cx="163.4" cy="332" r="3.5" fill="#f39a2b"/><circle cx="170" cy="322" r="3.5" fill="#f39a2b"/><circle cx="176.60000000000002" cy="332" r="3.5" fill="#f39a2b"/><circle cx="183.20000000000002" cy="322" r="3.5" fill="#f39a2b"/><rect x="646.64" y="333.8" width="6.72" height="25.2" fill="#5b4636"/>
+  <circle cx="650" cy="317" r="28" fill="#6f9a3c"/><circle cx="633.2" cy="311" r="3.5" fill="#f39a2b"/><circle cx="641.6" cy="321" r="3.5" fill="#f39a2b"/><circle cx="650" cy="311" r="3.5" fill="#f39a2b"/><circle cx="658.4000000000001" cy="321" r="3.5" fill="#f39a2b"/><circle cx="666.8000000000001" cy="311" r="3.5" fill="#f39a2b"/><rect x="727.36" y="343.2" width="5.279999999999999" height="19.8" fill="#5b4636"/>
+  <circle cx="730" cy="330" r="22" fill="#6f9a3c"/><circle cx="716.8" cy="324" r="3.5" fill="#f39a2b"/><circle cx="723.4" cy="334" r="3.5" fill="#f39a2b"/><circle cx="730" cy="324" r="3.5" fill="#f39a2b"/><circle cx="736.5999999999999" cy="334" r="3.5" fill="#f39a2b"/><circle cx="743.1999999999999" cy="324" r="3.5" fill="#f39a2b"/>
+  <path d="M40 470 Q80 455 120 470" stroke="#a06f22" stroke-width="3" fill="none"/><path d="M180 470 Q220 455 260 470" stroke="#a06f22" stroke-width="3" fill="none"/><path d="M320 470 Q360 455 400 470" stroke="#a06f22" stroke-width="3" fill="none"/><path d="M460 470 Q500 455 540 470" stroke="#a06f22" stroke-width="3" fill="none"/><path d="M600 470 Q640 455 680 470" stroke="#a06f22" stroke-width="3" fill="none"/><path d="M740 470 Q780 455 820 470" stroke="#a06f22" stroke-width="3" fill="none"/>
+<rect width="800" height="500" fill="url(#armavir-shade)"/>
+</svg>

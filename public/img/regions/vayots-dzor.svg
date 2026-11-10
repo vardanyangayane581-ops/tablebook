@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Վայոց ձոր">
+<title>Վայոց ձոր</title>
+<defs><linearGradient id="vd-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a36a"/><stop offset="0.5" stop-color="#f8cfa0"/><stop offset="1" stop-color="#fbe6c9"/></linearGradient><linearGradient id="vd-fall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8f6ff"/><stop offset="1" stop-color="#9fd3f0"/></linearGradient>
+  <linearGradient id="vayots-dzor-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
+</defs>
+
+  <rect width="800" height="500" fill="url(#vd-sky)"/>
+  <circle cx="150" cy="120" r="67.60000000000001" fill="#ffd29a" opacity="0.35"/>
+  <circle cx="150" cy="120" r="41.6" fill="#ffd29a" opacity="0.45"/>
+  <circle cx="150" cy="120" r="26" fill="#fff4dc"/>
+  <path d="M0 500 L0 220 L120 160 L230 200 L340 130 L440 190 L560 140 L680 200 L800 160 L800 500 Z" fill="#c46a48" opacity="0.75"/>
+  <path d="M260 500 L260 190 L320 140 L360 170 L380 500 Z" fill="#a8482f"/>
+  <path d="M520 500 L500 160 L560 120 L620 170 L640 500 Z" fill="#b5533a"/>
+  <path d="M260 220 L380 230 M262 290 L378 300 M500 210 L630 220 M505 300 L636 296" stroke="#8a3524" stroke-width="3"/>
+  <path d="M380 180 L500 180 L500 500 L380 500 Z" fill="#7b3a2a"/>
+  <path d="M420 180 Q440 175 460 180 L470 440 L410 440 Z" fill="url(#vd-fall)"/>
+  <path d="M418 190 L416 430" stroke="#ffffff" stroke-width="2" opacity="0.7"/><path d="M430 190 L429 430" stroke="#ffffff" stroke-width="2" opacity="0.7"/><path d="M442 190 L442 430" stroke="#ffffff" stroke-width="2" opacity="0.7"/><path d="M454 190 L455 430" stroke="#ffffff" stroke-width="2" opacity="0.7"/><path d="M466 190 L468 430" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+  <ellipse cx="440" cy="445" rx="70" ry="16" fill="#ffffff" opacity="0.8"/>
+  <path d="M0 410 Q200 380 380 430 L380 500 L0 500 Z" fill="#7a9a46"/>
+  <path d="M500 430 Q640 380 800 400 L800 500 L500 500 Z" fill="#6f9040"/>
+  <path d="M0 430 Q180 410 360 445" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/><path d="M0 448 Q180 428 360 459" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/><path d="M0 466 Q180 446 360 473" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/><path d="M0 484 Q180 464 360 487" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/>
+  <path d="M520 450 Q650 410 800 420" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/><path d="M520 464 Q650 428 800 438" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/><path d="M520 478 Q650 446 800 456" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/><path d="M520 492 Q650 464 800 474" stroke="#4c6b2a" stroke-width="5" fill="none" stroke-dasharray="10 7" stroke-linecap="round"/>
+  <circle cx="80" cy="425" r="5" fill="#6b2a4a"/><circle cx="86" cy="430" r="5" fill="#6b2a4a"/><circle cx="78" cy="434" r="5" fill="#7d3458"/><circle cx="120" cy="440" r="5" fill="#6b2a4a"/><circle cx="126" cy="445" r="5" fill="#6b2a4a"/><circle cx="118" cy="449" r="5" fill="#7d3458"/><circle cx="700" cy="418" r="5" fill="#6b2a4a"/><circle cx="706" cy="423" r="5" fill="#6b2a4a"/><circle cx="698" cy="427" r="5" fill="#7d3458"/><circle cx="740" cy="432" r="5" fill="#6b2a4a"/><circle cx="746" cy="437" r="5" fill="#6b2a4a"/><circle cx="738" cy="441" r="5" fill="#7d3458"/>
+<rect width="800" height="500" fill="url(#vayots-dzor-shade)"/>
+</svg>
