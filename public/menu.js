@@ -313,6 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("sum-count").textContent = Cart.count(cart);
       document.getElementById("sum-per").textContent = Cart.money(Math.round(total / guests));
       document.getElementById("sum-total").textContent = Cart.money(total);
+      document.getElementById("promo-amount").textContent = Cart.money(V.cashbackFor(total));
     }
 
     document.addEventListener("cart:change", render);
@@ -325,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
     getJSON("/api/me").then(function (res) {
       loggedIn = Boolean(res.data.user);
       document.getElementById("login-hint").hidden = loggedIn;
-      document.getElementById("checkout-btn").textContent = loggedIn ? "Հաստատել ճաշացանկը" : "Մուտք գործել և հաստատել";
+      document.getElementById("checkout-label").textContent = loggedIn ? "Վճարել" : "Մուտք գործել և վճարել";
     }).catch(function () {});
 
     function showErrors(errors) {
@@ -335,7 +336,109 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    form.addEventListener("submit", async function (event) {
+    // ----- Վճարման պատուհան -----
+    const payDialog = document.getElementById("pay-dialog");
+    const payForm = document.getElementById("pay-form");
+    const cardInput = document.getElementById("card-number");
+    const payBtn = document.getElementById("pay-btn");
+    let orderInput = null;
+    let cardEnabled = true;
+    let paying = false;
+
+    getJSON("/api/payment-options").then(function (res) {
+      cardEnabled = res.data.card !== false;
+      const cardOption = document.getElementById("method-card");
+      cardOption.classList.toggle("disabled", !cardEnabled);
+      cardOption.querySelector("input").disabled = !cardEnabled;
+      document.getElementById("cashback-promo").hidden = !cardEnabled;
+      if (!cardEnabled) cardOption.querySelector(".pm-text span").textContent = "Ժամանակավորապես հասանելի չէ";
+    }).catch(function () {});
+
+    function showPayErrors(errors) {
+      for (const name of ["payment", "card_number", "pay-form"]) {
+        const box = document.getElementById(name + "-error");
+        if (box) box.textContent = errors[name === "pay-form" ? "form" : name] || "";
+      }
+      cardInput.setAttribute("aria-invalid", errors.card_number ? "true" : "false");
+    }
+
+    function currentMethod() {
+      const checked = payForm.querySelector("input[name=method]:checked");
+      return checked ? checked.value : "";
+    }
+
+    // Քարտի համարը ցույց ենք տալիս 4-ական խմբերով, իսկ քարտի նկարում՝ միայն վերջին 4-ը
+    function formatCard(digits) {
+      return digits.replace(/(.{4})(?=.)/g, "$1 ");
+    }
+
+    function updateCardPreview() {
+      const digits = V.cardDigits(cardInput.value).slice(0, 16);
+      // Առաջին 12 թվանշանը քարտի նկարում փակ է, որ կողքից նայողը չտեսնի
+      const masked = digits.replace(/\d/g, function (d, i) { return i < 12 ? "•" : d; }).padEnd(16, "•");
+      document.getElementById("bc-number").textContent = formatCard(masked);
+      const brand = digits.length >= 1 ? V.cardBrand(digits) : "Tablebook";
+      document.getElementById("bc-brand").textContent = brand === "Քարտ" ? "Tablebook" : brand;
+      document.getElementById("bank-card").dataset.brand = brand.toLowerCase();
+    }
+
+    function updatePayButton() {
+      const method = currentMethod();
+      const total = Cart.total();
+      for (const option of payForm.querySelectorAll(".pay-method")) {
+        option.classList.toggle("selected", option.querySelector("input").checked);
+      }
+      document.getElementById("card-panel").hidden = method !== "card";
+      document.getElementById("cash-panel").hidden = method !== "cash";
+      payBtn.disabled = !method || paying;
+      if (!method) payBtn.textContent = "Ընտրեք վճարման եղանակը";
+      else if (method === "card") payBtn.textContent = "🔒 Վճարել " + Cart.money(total);
+      else payBtn.textContent = "✓ Հաստատել պատվերը";
+    }
+
+    function openPayment(input) {
+      orderInput = input;
+      const total = Cart.total();
+      const cashback = V.cashbackFor(total);
+      document.getElementById("pay-total").textContent = Cart.money(total);
+      document.getElementById("pay-details").textContent =
+        Cart.load().restaurant_name + " · " + formatDate(input.date) + ", " + input.time + " · " + input.guests + " հյուր";
+      document.getElementById("pay-cashback").textContent = "+" + Cart.money(cashback);
+      document.getElementById("cash-missed").textContent = Cart.money(cashback);
+      document.getElementById("pay-step-form").hidden = false;
+      document.getElementById("pay-step-done").hidden = true;
+      showPayErrors({});
+      updatePayButton();
+      updateCardPreview();
+      payDialog.showModal();
+    }
+
+    payForm.addEventListener("change", function (event) {
+      if (event.target.name !== "method") return;
+      showPayErrors({});
+      updatePayButton();
+      if (currentMethod() === "card") cardInput.focus();
+    });
+
+    cardInput.addEventListener("input", function () {
+      const digits = V.cardDigits(cardInput.value).slice(0, 16);
+      cardInput.value = formatCard(digits);
+      cardInput.setAttribute("aria-invalid", "false");
+      document.getElementById("card_number-error").textContent = "";
+      updateCardPreview();
+    });
+
+    payDialog.querySelector("[data-close]").addEventListener("click", function () { payDialog.close(); });
+    payDialog.addEventListener("click", function (event) {
+      if (event.target === payDialog && !paying) payDialog.close();
+    });
+    // Փակելիս քարտի համարը ջնջում ենք էջից
+    payDialog.addEventListener("close", function () {
+      cardInput.value = "";
+      updateCardPreview();
+    });
+
+    form.addEventListener("submit", function (event) {
       event.preventDefault();
       if (!loggedIn) {
         window.location.href = "/login?next=/cart";
@@ -345,34 +448,72 @@ document.addEventListener("DOMContentLoaded", function () {
       const check = V.validateReservation(input, new Date());
       if (Object.keys(check.errors).length > 0) return showErrors(check.errors);
       showErrors({});
+      openPayment(input);
+    });
+
+    payForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (paying) return;
+      const payment = { method: currentMethod(), card_number: cardInput.value };
+      const check = V.validatePayment(payment);
+      if (Object.keys(check.errors).length > 0) return showPayErrors(check.errors);
+      showPayErrors({});
 
       const cart = Cart.load();
-      const button = document.getElementById("checkout-btn");
-      button.disabled = true;
+      const total = Cart.total(cart);
+      paying = true;
+      payBtn.disabled = true;
+      payBtn.classList.add("loading");
+      payBtn.textContent = payment.method === "card" ? "Վճարումը մշակվում է…" : "Ուղարկվում է…";
       try {
         const res = await getJSON("/api/evening-menus", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(Object.assign({}, input, {
+          body: JSON.stringify(Object.assign({}, orderInput, {
             restaurant_id: cart.restaurant_id,
-            items: cart.items.map(function (i) { return { id: i.id, qty: i.qty }; })
+            items: cart.items.map(function (i) { return { id: i.id, qty: i.qty }; }),
+            payment: { method: check.data.method, card_number: check.data.card_number }
           }))
         });
         if (res.ok) {
           Cart.clear();
-          window.location.href = "/my-menus?created=1";
+          cardInput.value = "";
+          showSuccess(res.data.menu, total);
           return;
         }
         if (res.status === 401) {
           window.location.href = "/login?next=/cart";
           return;
         }
-        showErrors(res.data.errors || { form: V.MESSAGES.serverError });
+        const errors = res.data.errors || { form: V.MESSAGES.serverError };
+        // Ամսաթվի կամ ժամի սխալը ցույց ենք տալիս հիմնական ձևում
+        if (errors.date || errors.time || errors.guests || errors.note) {
+          payDialog.close();
+          showErrors(errors);
+        } else {
+          showPayErrors(errors);
+        }
       } catch (e) {
-        showErrors({ form: V.MESSAGES.serverDown });
+        showPayErrors({ form: V.MESSAGES.serverDown });
+      } finally {
+        paying = false;
+        payBtn.classList.remove("loading");
+        updatePayButton();
       }
-      button.disabled = false;
     });
+
+    function showSuccess(menu, total) {
+      const p = (menu && menu.payment) || {};
+      const isCard = p.method === "card";
+      document.getElementById("pay-step-form").hidden = true;
+      document.getElementById("pay-step-done").hidden = false;
+      document.getElementById("done-title").textContent = isCard ? "Վճարումը հաջողվեց" : "Պատվերը ուղարկվեց";
+      document.getElementById("done-text").textContent = isCard
+        ? Cart.money(total) + " վճարվեց " + (p.card_brand || "քարտով") + " •••• " + p.card_last4 + " քարտով։ Ռեստորանը շուտով կհաստատի պատվերը։"
+        : "Վճարումը՝ կանխիկ, ռեստորանում։ Ռեստորանը շուտով կհաստատի պատվերը։";
+      document.getElementById("done-cashback").hidden = !isCard;
+      document.getElementById("done-cashback-amount").textContent = "+" + Cart.money(p.cashback || 0);
+    }
   }
 
   // ---------- Իմ ճաշացանկերը ----------
@@ -384,12 +525,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (new URLSearchParams(window.location.search).get("created")) {
       const notice = document.getElementById("notice");
-      notice.textContent = "✅ Ճաշացանկը ուղարկվեց ռեստորանին։ Հաստատումից հետո կարգավիճակը կփոխվի։";
+      notice.textContent = "✅ Պատվերը ուղարկվեց ռեստորանին։ Հաստատումից հետո կարգավիճակը կփոխվի։";
       notice.hidden = false;
       history.replaceState(null, "", "/my-menus");
     }
 
-    function render(menus) {
+    function paymentRow(p) {
+      p = p || { method: "cash", status: "unpaid", cashback: 0 };
+      const row = el("div", "pay-row");
+      if (p.method === "card") {
+        row.append(el("span", "pay-chip card", "💳 " + (p.card_brand || "Քարտ") + " •••• " + (p.card_last4 || "")));
+        if (p.status === "refunded") row.append(el("span", "pay-chip refunded", "↩ Գումարը վերադարձվել է"));
+        else row.append(el("span", "pay-chip paid", "✓ Վճարված"));
+        if (p.cashback > 0) row.append(el("span", "pay-chip cashback", "🎁 +" + Cart.money(p.cashback) + " հետվճար"));
+      } else {
+        row.append(el("span", "pay-chip cash", "💵 Կանխիկ"));
+        row.append(el("span", "pay-chip " + (p.status === "paid" ? "paid" : "unpaid"),
+          p.status === "paid" ? "✓ Վճարված" : "Վճարվելու է ռեստորանում"));
+      }
+      return row;
+    }
+
+    function render(menus, cashbackTotal) {
+      const wallet = document.getElementById("cashback-wallet");
+      wallet.hidden = !(cashbackTotal > 0);
+      document.getElementById("wallet-amount").textContent = Cart.money(cashbackTotal || 0);
       document.getElementById("empty").hidden = menus.length > 0;
       list.replaceChildren();
       for (const m of menus) {
@@ -407,7 +567,7 @@ document.addEventListener("DOMContentLoaded", function () {
           d.append(el("span", "", i.qty + " × " + i.name), el("span", "", Cart.money(i.price * i.qty)));
           dishes.append(d);
         }
-        li.append(head, dishes);
+        li.append(head, dishes, paymentRow(m.payment));
         if (m.note) li.append(el("p", "res-note", "📝 " + m.note));
 
         if ((m.status === "pending" || m.status === "confirmed") && m.date >= todayIso) {
@@ -436,7 +596,7 @@ document.addEventListener("DOMContentLoaded", function () {
           window.location.href = "/login?next=/my-menus";
           return;
         }
-        render(res.data.menus || []);
+        render(res.data.menus || [], res.data.cashback_total || 0);
       }).catch(function () {
         showFormError("Սերվերը հասանելի չէ։");
       });

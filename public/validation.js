@@ -168,8 +168,72 @@
     return { data, errors };
   }
 
+  // ---------- Վճարում ----------
+
+  // Քարտով վճարելիս հաճախորդը ստանում է պատվերի գումարի 5%-ը որպես հետվճար
+  const CASHBACK_PERCENT = 5;
+
+  const PAYMENT_MESSAGES = {
+    method: "Ընտրեք վճարման եղանակը",
+    cardEmpty: "Գրեք քարտի 16 թվանշանը",
+    cardLength: "Քարտի համարը պետք է ունենա ճիշտ 16 թվանշան",
+    cardInvalid: "Քարտի համարը սխալ է։ Ստուգեք թվանշանները"
+  };
+
+  function cashbackFor(total) {
+    return Math.round((Number(total) || 0) * CASHBACK_PERCENT / 100);
+  }
+
+  // Միայն թվանշանները՝ առանց բացատների և գծիկների
+  function cardDigits(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  // Luhn ալգորիթմ՝ իրական քարտերի համարները միշտ անցնում են այս ստուգումը
+  function luhnOk(digits) {
+    let sum = 0;
+    for (let i = 0; i < digits.length; i++) {
+      let d = Number(digits[digits.length - 1 - i]);
+      if (i % 2 === 1) {
+        d *= 2;
+        if (d > 9) d -= 9;
+      }
+      sum += d;
+    }
+    return sum % 10 === 0;
+  }
+
+  function cardBrand(digits) {
+    if (/^9051/.test(digits)) return "ArCa";
+    if (/^4/.test(digits)) return "Visa";
+    if (/^(5[1-5]|222[1-9]|22[3-9]\d|2[3-6]\d\d|27[01]\d|2720)/.test(digits)) return "Mastercard";
+    if (/^220[0-4]/.test(digits)) return "Mir";
+    return "Քարտ";
+  }
+
+  function validatePayment(input) {
+    const method = input && input.method;
+    const errors = {};
+    const data = { method: method === "card" ? "card" : method === "cash" ? "cash" : "" };
+    if (!data.method) errors.payment = PAYMENT_MESSAGES.method;
+    if (data.method === "card") {
+      const digits = cardDigits(input.card_number);
+      if (!digits) errors.card_number = PAYMENT_MESSAGES.cardEmpty;
+      else if (digits.length !== 16) errors.card_number = PAYMENT_MESSAGES.cardLength;
+      else if (!luhnOk(digits)) errors.card_number = PAYMENT_MESSAGES.cardInvalid;
+      else data.card_number = digits;
+    }
+    return { data, errors };
+  }
+
   const api = {
     MESSAGES,
+    CASHBACK_PERCENT,
+    PAYMENT_MESSAGES,
+    cashbackFor,
+    cardDigits,
+    cardBrand,
+    validatePayment,
     BOOKING,
     TIME_SLOTS,
     toMinutes,

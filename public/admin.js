@@ -102,8 +102,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const orderFilter = document.getElementById("order-filter");
   const kindFilter = document.getElementById("kind-filter");
+  const payFilter = document.getElementById("pay-filter");
   orderFilter.addEventListener("change", loadOrders);
   kindFilter.addEventListener("change", loadOrders);
+  payFilter.addEventListener("change", loadOrders);
+
+  // Ինչպես է կատարվելու (կամ կատարվել) վճարումը
+  function paymentPanel(e) {
+    const p = e.payment || { method: "cash", status: "unpaid", cashback: 0 };
+    const isCard = p.method === "card";
+    const box = el("div", "admin-pay " + (isCard ? "card" : "cash") + " st-" + p.status);
+    const icon = el("span", "ap-icon", isCard ? "💳" : "💵");
+    icon.setAttribute("aria-hidden", "true");
+    const text = el("div", "ap-text");
+    text.append(el("strong", "", isCard
+      ? "Քարտով · " + (p.card_brand || "Քարտ") + " •••• " + (p.card_last4 || "")
+      : "Կանխիկ՝ ռեստորանում"));
+    let sub;
+    if (isCard && p.status === "refunded") sub = "Գումարը վերադարձվել է հաճախորդին";
+    else if (isCard) sub = money(e.total) + " վճարված է առցանց" + (p.cashback ? " · հաճախորդի հետվճարը՝ " + money(p.cashback) : "");
+    else if (p.status === "paid") sub = money(e.total) + " ստացվել է կանխիկ";
+    else sub = money(e.total) + " ստանալ հաճախորդից տեղում";
+    text.append(el("span", "", sub));
+    const STATUS = { paid: "✓ Վճարված", unpaid: "⏳ Չվճարված", refunded: "↩ Վերադարձված" };
+    box.append(icon, text, el("span", "ap-status", STATUS[p.status] || p.status));
+    return box;
+  }
+
+  async function markPaid(entry) {
+    if (!window.confirm("Նշե՞լ, որ " + money(entry.total) + " կանխիկ ստացվել է")) return;
+    const res = await send("POST", "/api/admin/evening-menus/" + entry.id + "/paid", {});
+    Cart.toast(res.ok ? "Վճարումը նշվեց" : ((res.data.errors && res.data.errors.form) || "Չհաջողվեց"));
+    loadOrders();
+  }
 
   // Ամեն տեսակի իր API հասցեն
   function baseUrl(entry) {
@@ -120,6 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const entries = all
       .filter(function (e) { return !orderFilter.value || e.status === orderFilter.value; })
       .filter(function (e) { return !kindFilter.value || e.kind === kindFilter.value; })
+      .filter(function (e) { return !payFilter.value || (e.kind === "menu" && e.payment && e.payment.method === payFilter.value); })
       .sort(function (a, b) {
         const pa = a.status === "pending" ? 0 : 1;
         const pb = b.status === "pending" ? 0 : 1;
@@ -156,18 +188,29 @@ document.addEventListener("DOMContentLoaded", function () {
           d.append(el("span", "", i.qty + " × " + i.name), el("span", "", money(i.price * i.qty)));
           dishes.append(d);
         }
-        li.append(dishes);
+        li.append(dishes, paymentPanel(e));
       }
       if (e.note) li.append(el("p", "res-note", "📝 " + e.note));
 
+      const paidByCard = e.kind === "menu" && e.payment && e.payment.method === "card" && e.payment.status === "paid";
       const actions = el("div", "row-actions");
       if (e.status === "pending") {
         const ok = el("button", "btn-pill primary small", "✓ Հաստատել");
         const no = el("button", "btn-pill ghost small danger", "✕ Մերժել");
         ok.type = no.type = "button";
         ok.addEventListener("click", function () { setStatus(e, "confirmed"); });
-        no.addEventListener("click", function () { setStatus(e, "rejected"); });
+        no.addEventListener("click", function () {
+          if (paidByCard && !window.confirm("Պատվերը վճարված է քարտով։ Մերժելիս " + money(e.total) + " կվերադարձվի հաճախորդին։ Շարունակե՞լ")) return;
+          setStatus(e, "rejected");
+        });
         actions.append(ok, no);
+      }
+      if (e.kind === "menu" && e.payment && e.payment.method === "cash" && e.payment.status === "unpaid" &&
+          (e.status === "pending" || e.status === "confirmed")) {
+        const paid = el("button", "btn-pill ghost small", "💵 Կանխիկը ստացվել է");
+        paid.type = "button";
+        paid.addEventListener("click", function () { markPaid(e); });
+        actions.append(paid);
       }
       if ((e.status === "pending" || e.status === "confirmed") && e.date >= today) {
         const move = el("button", "btn-pill ghost small", "🕒 Փոխել ժամը");

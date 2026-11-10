@@ -106,9 +106,19 @@
               <div class="sum-total"><dt>Ընդամենը</dt><dd id="sum-total"></dd></div>
             </dl>
 
+            <div class="cashback-promo" id="cashback-promo">
+              <span class="cb-icon" aria-hidden="true">💳</span>
+              <div>
+                <strong>Վճարեք քարտով՝ ստացեք 5% հետվճար</strong>
+                <span>Այս պատվերի համար՝ <b id="promo-amount">0 ֏</b> վերադարձ</span>
+              </div>
+            </div>
+
             <p class="field-error" id="form-error" role="alert"></p>
-            <button class="btn btn-primary" type="submit" id="checkout-btn">Հաստատել ճաշացանկը</button>
-            <p class="hint" id="login-hint" hidden>Հաստատելու համար անհրաժեշտ է <a href="/login?next=/cart">մուտք գործել</a>։ Զամբյուղը կպահպանվի։</p>
+            <button class="btn btn-primary btn-pay" type="submit" id="checkout-btn">
+              <span aria-hidden="true">💳</span> <span id="checkout-label">Վճարել</span>
+            </button>
+            <p class="hint" id="login-hint" hidden>Վճարելու համար անհրաժեշտ է <a href="/login?next=/cart">մուտք գործել</a>։ Զամբյուղը կպահպանվի։</p>
           </form>
         </aside>
       </div>
@@ -116,5 +126,96 @@
 
     <footer>© 2026 Tablebook։ Բոլոր տվյալները օրինակային են։</footer>
   </div>
+
+  <!-- Վճարման պատուհան -->
+  <dialog class="tb-dialog pay-dialog" id="pay-dialog" aria-labelledby="pay-title">
+    <form class="pay-form" id="pay-form" novalidate>
+      <div class="pay-step" id="pay-step-form">
+        <div class="pay-head">
+          <div>
+            <p class="em-kicker">Վճարում</p>
+            <h2 id="pay-title">Ինչպե՞ս կվճարեք</h2>
+          </div>
+          <button class="pay-close" type="button" data-close aria-label="Փակել">✕</button>
+        </div>
+
+        <div class="pay-amount">
+          <span>Վճարման ենթակա գումար</span>
+          <strong id="pay-total">0 ֏</strong>
+          <small id="pay-details"></small>
+        </div>
+
+        <fieldset class="pay-methods">
+          <legend class="sr-only">Վճարման եղանակ</legend>
+          <label class="pay-method" id="method-card">
+            <input type="radio" name="method" value="card">
+            <span class="pm-icon" aria-hidden="true">💳</span>
+            <span class="pm-text">
+              <strong>Քարտով</strong>
+              <span>Visa, Mastercard, ArCa</span>
+            </span>
+            <span class="pm-badge">+5% հետվճար</span>
+          </label>
+          <label class="pay-method" id="method-cash">
+            <input type="radio" name="method" value="cash">
+            <span class="pm-icon" aria-hidden="true">💵</span>
+            <span class="pm-text">
+              <strong>Կանխիկ</strong>
+              <span>Վճարում ռեստորանում՝ տեղում</span>
+            </span>
+          </label>
+        </fieldset>
+        <p class="field-error" id="payment-error" role="alert"></p>
+
+        <!-- Քարտի տվյալներ -->
+        <div class="card-panel" id="card-panel" hidden>
+          <div class="bank-card" id="bank-card" aria-hidden="true">
+            <div class="bc-top">
+              <span class="bc-chip"></span>
+              <span class="bc-brand" id="bc-brand">Tablebook</span>
+            </div>
+            <div class="bc-number" id="bc-number">•••• •••• •••• ••••</div>
+            <div class="bc-bottom">
+              <span>Tablebook Pay</span>
+              <span class="bc-cashback">+5% հետվճար</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="card-number">Քարտի համար (16 թվանշան)</label>
+            <input id="card-number" name="card_number" type="text" inputmode="numeric"
+                   autocomplete="cc-number" maxlength="19" placeholder="0000 0000 0000 0000" spellcheck="false">
+            <p class="field-error" id="card_number-error"></p>
+          </div>
+          <div class="cashback-line">
+            <span>🎁 Հետվճար ձեր հաշվին</span>
+            <strong id="pay-cashback">+0 ֏</strong>
+          </div>
+          <p class="secure-note">🔒 Քարտի ամբողջական համարը չի պահվում։ Ռեստորանը տեսնում է միայն վերջին 4 թվանշանը։</p>
+        </div>
+
+        <div class="cash-panel" id="cash-panel" hidden>
+          <p>💵 Վճարումը կկատարեք ռեստորանում՝ ճաշից հետո։ Ռեստորանը կստանա պատվերը և կհաստատի այն։</p>
+          <p class="muted small">Քարտով վճարելիս կստանայիք <b id="cash-missed">0 ֏</b> հետվճար։</p>
+        </div>
+
+        <p class="field-error" id="pay-form-error" role="alert"></p>
+        <button class="btn btn-primary btn-pay" type="submit" id="pay-btn" disabled>Ընտրեք վճարման եղանակը</button>
+      </div>
+
+      <!-- Հաջող վճարում -->
+      <div class="pay-step pay-success" id="pay-step-done" hidden>
+        <div class="success-check" aria-hidden="true">
+          <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" fill="none"/><path d="M15 27l7 7 15-15" fill="none"/></svg>
+        </div>
+        <h2 id="done-title">Վճարումը հաջողվեց</h2>
+        <p id="done-text"></p>
+        <div class="done-cashback" id="done-cashback" hidden>
+          <span>🎁 Ձեր հետվճարը</span>
+          <strong id="done-cashback-amount"></strong>
+        </div>
+        <a class="btn btn-primary" href="/my-menus?created=1">Դիտել իմ պատվերները</a>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

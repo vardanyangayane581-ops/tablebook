@@ -98,6 +98,9 @@ CREATE TABLE IF NOT EXISTS evening_menus (
   status        TEXT    NOT NULL DEFAULT 'pending'
                 CHECK (status IN ('pending', 'confirmed', 'rejected', 'cancelled')),
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+  -- Վճարման սյունակները (payment_method, payment_status, card_brand, card_last4,
+  -- card_fingerprint, cashback, paid_at) ավելացնում է restaurants.js-ը։
+  -- Քարտի ամբողջական համարը երբեք չի պահվում
 );
 
 -- Ուտեստի անունն ու գինը պահում ենք պատվերի պահին, որ հետագա փոփոխությունները չազդեն

@@ -1,8 +1,17 @@
 // Ռեստորաններ, մենյու, երեկոյի ճաշացանկեր և ադմին վահանակի API
 
 const path = require("node:path");
+const crypto = require("node:crypto");
 const bcrypt = require("bcryptjs");
-const { validateReservation, localDate, MESSAGES } = require("./public/validation.js");
+const {
+  validateReservation,
+  validatePayment,
+  cashbackFor,
+  cardBrand,
+  CASHBACK_PERCENT,
+  localDate,
+  MESSAGES
+} = require("./public/validation.js");
 const { DEFAULT_SETTINGS } = require("./db/seed.js");
 
 const CATEGORIES = ["starter", "salad", "main", "dessert", "drink"];
@@ -80,6 +89,34 @@ function hasErrors(errors) {
 // ---------- Մոդուլ ----------
 
 module.exports = function setupRestaurants(app, db, { requireUser, startSession }) {
+  // ----- Վճարման սյունակներ (հին բազաներում դեռ չկան) -----
+  const PAYMENT_COLUMNS = {
+    payment_method: "TEXT NOT NULL DEFAULT 'cash'",
+    payment_status: "TEXT NOT NULL DEFAULT 'unpaid'",
+    card_brand: "TEXT",
+    card_last4: "TEXT",
+    card_fingerprint: "TEXT",
+    cashback: "INTEGER NOT NULL DEFAULT 0",
+    paid_at: "TEXT"
+  };
+  const menuColumns = db.prepare("PRAGMA table_info(evening_menus)").all().map((c) => c.name);
+  for (const [name, type] of Object.entries(PAYMENT_COLUMNS)) {
+    if (!menuColumns.includes(name)) db.exec("ALTER TABLE evening_menus ADD COLUMN " + name + " " + type);
+  }
+
+  // Քարտի գաղտնի բանալին պահվում է միայն .env-ում։ Քարտի ամբողջական համարը երբեք
+  // չի պահվում ո՛չ բազայում, ո՛չ ֆայլերում, ո՛չ լոգերում. պահում ենք միայն վերջին 4
+  // թվանշանը և HMAC «մատնահետքը», որով կարելի է ճանաչել նույն քարտը, բայց հնարավոր չէ
+  // վերականգնել համարը (առանց .env-ի բանալու՝ նույնիսկ ստուգել)
+  const paymentSecret = process.env.PAYMENT_SECRET || "";
+  const cardEnabled = paymentSecret.length >= 32;
+  if (!cardEnabled) {
+    console.warn("Ուշադրություն. PAYMENT_SECRET (32+ նիշ) նշված չէ .env-ում, քարտով վճարումն անջատված է։");
+  }
+  function cardFingerprint(digits) {
+    return crypto.createHmac("sha256", paymentSecret).update(digits).digest("hex");
+  }
+
   // ----- Հարցումներ -----
   const q = {
     settings: db.prepare("SELECT key, value FROM site_settings"),
@@ -120,7 +157,19 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
     deleteItem: db.prepare("DELETE FROM menu_items WHERE id = ?"),
 
     insertMenu: db.prepare(
-      "INSERT INTO evening_menus (user_id, restaurant_id, date, time, guests, note, total) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO evening_menus (user_id, restaurant_id, date, time, guests, note, total, " +
+      "payment_method, payment_status, card_brand, card_last4, card_fingerprint, cashback, paid_at) " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ),
+    // Մերժված կամ չեղարկված պատվերի վճարված գումարը վերադարձվում է, հետվճարը՝ չեղարկվում
+    refundMenu: db.prepare(
+      "UPDATE evening_menus SET payment_status = 'refunded', cashback = 0 WHERE id = ? AND payment_status = 'paid' AND payment_method = 'card'"
+    ),
+    markCashPaid: db.prepare(
+      "UPDATE evening_menus SET payment_status = 'paid', paid_at = datetime('now') WHERE id = ? AND payment_method = 'cash' AND payment_status = 'unpaid'"
+    ),
+    cashbackOfUser: db.prepare(
+      "SELECT COALESCE(SUM(cashback), 0) AS total FROM evening_menus WHERE user_id = ? AND payment_status = 'paid'"
     ),
     insertMenuItem: db.prepare(
       "INSERT INTO evening_menu_items (menu_id, item_id, category, name, price, qty) VALUES (?, ?, ?, ?, ?, ?)"
@@ -217,6 +266,14 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
       total: Number(e.total),
       status: e.status,
       created_at: e.created_at,
+      payment: {
+        method: e.payment_method || "cash",
+        status: e.payment_status || "unpaid",
+        card_brand: e.card_brand || null,
+        card_last4: e.card_last4 || null,
+        cashback: Number(e.cashback) || 0,
+        paid_at: e.paid_at || null
+      },
       items: q.menuItems.all(e.id).map((i) => ({
         item_id: i.item_id === null ? null : Number(i.item_id),
         category: i.category,
@@ -278,13 +335,33 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
       lines.push({ item, qty });
     }
     if (lines.length === 0 && !errors.form) errors.form = "Զամբյուղը դատարկ է";
+
+    const payment = validatePayment(body.payment || {});
+    Object.assign(errors, payment.errors);
+    if (payment.data.method === "card" && !cardEnabled) {
+      errors.payment = "Քարտով վճարումը ժամանակավորապես հասանելի չէ։ Ընտրեք կանխիկ վճարումը։";
+    }
     if (hasErrors(errors)) return res.status(400).json({ errors });
 
     const total = lines.reduce((sum, l) => sum + Number(l.item.price) * l.qty, 0);
+    const isCard = payment.data.method === "card";
+    const digits = isCard ? payment.data.card_number : "";
+    const pay = {
+      method: payment.data.method,
+      status: isCard ? "paid" : "unpaid",
+      brand: isCard ? cardBrand(digits) : null,
+      last4: isCard ? digits.slice(-4) : null,
+      fingerprint: isCard ? cardFingerprint(digits) : null,
+      cashback: isCard ? cashbackFor(total) : 0,
+      paidAt: isCard ? new Date().toISOString().slice(0, 19).replace("T", " ") : null
+    };
     db.exec("BEGIN");
     let menuId;
     try {
-      const result = q.insertMenu.run(req.session.userId, restaurantId, data.date, data.time, data.guests, data.note, total);
+      const result = q.insertMenu.run(
+        req.session.userId, restaurantId, data.date, data.time, data.guests, data.note, total,
+        pay.method, pay.status, pay.brand, pay.last4, pay.fingerprint, pay.cashback, pay.paidAt
+      );
       menuId = Number(result.lastInsertRowid);
       for (const l of lines) {
         q.insertMenuItem.run(menuId, Number(l.item.id), l.item.category, l.item.name, Number(l.item.price), l.qty);
@@ -298,8 +375,16 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
     res.status(201).json({ menu: publicMenu(row) });
   });
 
+  // Վճարման պատուհանի համար՝ քարտով վճարումը միացված է, թե ոչ
+  app.get("/api/payment-options", (req, res) => {
+    res.json({ card: cardEnabled, cash: true, cashback_percent: CASHBACK_PERCENT });
+  });
+
   app.get("/api/evening-menus", requireUser, (req, res) => {
-    res.json({ menus: q.menusOfUser.all(req.session.userId).map((m) => publicMenu(m)) });
+    res.json({
+      menus: q.menusOfUser.all(req.session.userId).map((m) => publicMenu(m)),
+      cashback_total: Number(q.cashbackOfUser.get(req.session.userId).total)
+    });
   });
 
   app.post("/api/evening-menus/:id/cancel", requireUser, (req, res) => {
@@ -313,6 +398,7 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
       return res.status(409).json({ errors: { form: MESSAGES.cannotCancel } });
     }
     q.setMenuStatus.run("cancelled", id);
+    q.refundMenu.run(id);
     res.json({ ok: true });
   });
 
@@ -492,6 +578,19 @@ module.exports = function setupRestaurants(app, db, { requireUser, startSession 
     if (!id || !q.menu.get(id)) return res.status(404).json({ errors: { form: "Պատվերը չի գտնվել" } });
     if (!STATUSES.includes(status)) return res.status(400).json({ errors: { form: "Սխալ կարգավիճակ" } });
     q.setMenuStatus.run(status, id);
+    if (status === "rejected" || status === "cancelled") q.refundMenu.run(id);
+    res.json({ ok: true });
+  });
+
+  // Կանխիկ վճարումը ստացվել է (ադմինը նշում է ռեստորանում վճարելուց հետո)
+  app.post("/api/admin/evening-menus/:id/paid", requireAdmin, (req, res) => {
+    const id = toId(req.params.id);
+    const row = id ? q.menu.get(id) : null;
+    if (!row) return res.status(404).json({ errors: { form: "Պատվերը չի գտնվել" } });
+    if (row.payment_method !== "cash" || row.payment_status !== "unpaid") {
+      return res.status(409).json({ errors: { form: "Այս պատվերի վճարումն արդեն նշված է" } });
+    }
+    q.markCashPaid.run(id);
     res.json({ ok: true });
   });
 
