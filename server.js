@@ -280,6 +280,9 @@ const { requireAdmin } = require("./restaurants.js")(app, db, { requireUser, sta
 // Սեղաններ, զբաղված ժամեր, ժամի փոփոխություն և բոլոր ամրագրումները ադմին վահանակում
 tables.routes(app, { requireUser, requireAdmin });
 
+// Երեկոների օրացույց՝ միջոցառումներ և դրանց ամրագրումներ
+require("./events.js")(db).routes(app, { requireUser, requireAdmin });
+
 // Չգտնված API երթուղի
 app.use("/api", (req, res) => {
   res.status(404).json({ errors: { form: "Այսպիսի հասցե չկա։" } });

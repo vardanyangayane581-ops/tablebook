@@ -114,3 +114,39 @@ CREATE TABLE IF NOT EXISTS evening_menu_items (
 );
 
 CREATE INDEX IF NOT EXISTS evening_menus_user ON evening_menus (user_id, date);
+
+-- ---------- Երեկոների օրացույց ----------
+
+-- Միջոցառումներ՝ կենդանի երաժշտություն, ջազ, ֆուտբոլի դիտում և այլն
+-- kind՝ live | jazz | football | other, price՝ մուտքի գինը մեկ հյուրի համար (0՝ անվճար),
+-- capacity՝ քանի հյուր կարող է ամրագրել ընդհանուր
+CREATE TABLE IF NOT EXISTS events (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  restaurant_id INTEGER NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  kind          TEXT    NOT NULL CHECK (kind IN ('live', 'jazz', 'football', 'other')),
+  title         TEXT    NOT NULL,
+  description   TEXT    NOT NULL DEFAULT '',
+  date          TEXT    NOT NULL,
+  time          TEXT    NOT NULL,
+  price         INTEGER NOT NULL DEFAULT 0 CHECK (price BETWEEN 0 AND 1000000),
+  capacity      INTEGER NOT NULL CHECK (capacity BETWEEN 1 AND 500),
+  is_active     INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS events_date ON events (date, time);
+
+-- Հյուրերի ամրագրումները միջոցառումների համար։ Տեղերը հաշվվում են ըստ guests-ի,
+-- այդ պատճառով ամրագրումը միանգամից հաստատված է (confirmed), եթե տեղ կա
+CREATE TABLE IF NOT EXISTS event_bookings (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  event_id   INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  guests     INTEGER NOT NULL CHECK (guests BETWEEN 1 AND 12),
+  note       TEXT    NOT NULL DEFAULT '',
+  status     TEXT    NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'cancelled')),
+  created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS event_bookings_event ON event_bookings (event_id, status);
+CREATE INDEX IF NOT EXISTS event_bookings_user ON event_bookings (user_id);

@@ -2585,3 +2585,123 @@ input.step-value:focus { outline: none; border-color: var(--accent); background:
 .plan-admin h2 { font-size: 22px; }
 .plan-admin .floor-plan { max-width: 760px; }
 .fp-empty[hidden] { display: none; }
+
+/* ---------- Երեկոների օրացույց (/events) ---------- */
+
+.ev-calendar { margin-bottom: 18px; }
+/* Առաջիկա 14 օրը՝ հորիզոնական շերտով */
+.ev-days {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(64px, 1fr);
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scroll-snap-type: x mandatory;
+}
+.ev-day {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 8px 4px 6px;
+  font: inherit;
+  color: var(--muted);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+.ev-day:hover { transform: translateY(-2px); border-color: var(--accent); }
+.ev-day:focus-visible { outline: 3px solid var(--warm); outline-offset: 2px; }
+.ev-day.has-events { color: var(--ink); background: var(--surface); }
+.ev-day-week, .ev-day-month { font-size: 12px; line-height: 1.3; }
+.ev-day-num { font-family: "Noto Serif Armenian", Georgia, serif; font-size: 22px; line-height: 1.2; }
+.ev-day-dots { min-height: 18px; font-size: 11px; letter-spacing: -2px; }
+.ev-day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.ev-list { display: grid; gap: 26px; }
+.ev-list .skeleton { height: 150px; }
+.ev-group-title {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 18px;
+}
+.ev-cards { display: grid; gap: 14px; }
+
+.ev-card {
+  --kind: var(--accent);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--kind);
+  box-shadow: var(--shadow);
+}
+.ev-card.kind-jazz { --kind: #7b5cc4; }
+.ev-card.kind-football { --kind: #2f8f3a; }
+.ev-card.kind-live { --kind: var(--warm); }
+.ev-card.kind-other { --kind: #c45c86; }
+
+.ev-date {
+  display: grid;
+  justify-items: center;
+  min-width: 72px;
+  padding: 10px 6px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--kind) 14%, var(--surface));
+  color: var(--ink);
+  line-height: 1.15;
+}
+.ev-date strong { font-family: "Noto Serif Armenian", Georgia, serif; font-size: 30px; }
+.ev-date span { font-size: 13px; color: var(--muted); }
+.ev-date .ev-time { margin-top: 4px; font-size: 15px; font-weight: 700; color: var(--kind); }
+
+.ev-body { display: grid; gap: 4px; min-width: 0; }
+.ev-body h3 { font-size: 21px; }
+.ev-kind { font-size: 14px; font-weight: 600; color: var(--kind); }
+.ev-place { color: var(--muted); text-decoration: none; font-size: 15px; }
+.ev-place:hover { color: var(--accent); text-decoration: underline; }
+.ev-desc { margin: 2px 0 0; font-size: 15px; }
+.ev-seats { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 14px; color: var(--muted); }
+.ev-bar { flex: 0 0 110px; height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.ev-bar span { display: block; height: 100%; border-radius: inherit; background: var(--kind); }
+.ev-few { color: var(--error); font-weight: 600; }
+
+.ev-side { display: grid; justify-items: end; gap: 10px; text-align: right; }
+.ev-price { font-weight: 700; white-space: nowrap; }
+.ev-price.free { color: var(--accent); }
+.ev-side .btn-pill:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+.ev-d-kind { margin: 0; font-weight: 600; color: var(--muted); }
+.ev-total { margin: 6px 0 0; font-size: 22px; font-weight: 700; color: var(--accent); }
+
+@media (max-width: 640px) {
+  .ev-card { grid-template-columns: auto 1fr; gap: 12px 14px; padding: 14px; }
+  .ev-date { min-width: 60px; }
+  .ev-date strong { font-size: 24px; }
+  .ev-side { grid-column: 1 / -1; grid-auto-flow: column; justify-content: space-between; align-items: center; }
+  .ev-bar { flex-basis: 70px; }
+}
+
+/* «Ամրագրումներ» էջի «Իմ երեկոները» բաժինը */
+.my-events { margin-top: 36px; }
+.my-events .mine-head h2 { color: #fff; font-size: clamp(22px, 3.4vw, 28px); }
+
+/* Ադմին՝ միջոցառման հյուրերի ցանկ */
+.guest-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 50vh; overflow-y: auto; }
+.guest-list li { display: grid; gap: 2px; padding: 10px 14px; border-radius: 12px; background: var(--bg); }
+.guest-list li.dim { opacity: 0.55; text-decoration: line-through; }
+/* Ընդհանուր section-ի 40px լուսանցքը այստեղ պետք չէ */
+.ev-calendar, .ev-group, .my-events { padding: 0; }
+.ev-days { scrollbar-width: thin; }
+.admin-table td .link-btn { white-space: nowrap; }

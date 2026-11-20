@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Երեկոներ · Tablebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/cart-store.js" defer></script>
+  <script src="/validation.js" defer></script>
+  <script src="/event-kinds.js" defer></script>
+  <script src="/auth.js" defer></script>
+  <script src="/fields.js" defer></script>
+  <script src="/events-page.js" defer></script>
+</head>
+<body class="page-events">
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Գլխավոր մենյու">
+        <a class="nav-link" href="/restaurants">Ռեստորաններ</a>
+        <a class="nav-link" href="/events" aria-current="page">Երեկոներ</a>
+        <a class="cart-link" href="/cart" aria-label="Զամբյուղ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>
+          <span class="cart-count" data-cart-count hidden>0</span>
+        </a>
+        <div class="auth-box" id="auth-guest">
+          <a class="nav-link" href="/login">Մուտք</a>
+          <a class="nav-link strong" href="/register">Գրանցվել</a>
+        </div>
+        <div class="auth-box" id="auth-user" hidden>
+          <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-menus">Իմ ճաշացանկերը</a>
+          <a class="nav-link" href="/my-reservations">Ամրագրումներ</a>
+          <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
+        </div>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <main class="page-main">
+      <div class="page-intro">
+        <span class="eyebrow">🎶 Երեկոների օրացույց</span>
+        <h1>Երեկոներ և միջոցառումներ</h1>
+        <p>Կենդանի երաժշտություն, ջազային երեկոներ և ֆուտբոլի դիտում Հայաստանի ռեստորաններում։ Ընտրեք երեկոն և ամրագրեք տեղ ձեր ընկերների համար։</p>
+      </div>
+
+      <section class="ev-calendar" aria-labelledby="ev-cal-title">
+        <h2 class="visually-hidden" id="ev-cal-title">Առաջիկա օրեր</h2>
+        <div class="ev-days" id="ev-days" role="group" aria-label="Ընտրեք օրը"></div>
+      </section>
+
+      <div class="toolbar">
+        <div class="chips" id="kind-chips" role="group" aria-label="Միջոցառման տեսակ"></div>
+      </div>
+
+      <p class="field-error" id="form-error" role="alert"></p>
+      <div class="ev-list" id="ev-list" aria-live="polite">
+        <div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+      <div class="empty-note" id="ev-empty" hidden>
+        <p class="empty-emoji">🎻</p>
+        <p id="ev-empty-text">Այս օրերին միջոցառումներ չկան։</p>
+        <button class="btn-pill ghost small" type="button" id="ev-reset">Ցույց տալ բոլորը</button>
+      </div>
+    </main>
+
+    <footer>© 2026 Tablebook։ Բոլոր տվյալները օրինակային են։</footer>
+  </div>
+
+  <!-- Միջոցառման ամրագրում -->
+  <dialog class="tb-dialog" id="ev-dialog" aria-labelledby="ev-d-title">
+    <form class="admin-form" id="ev-form" novalidate>
+      <p class="ev-d-kind" id="ev-d-kind"></p>
+      <h2 id="ev-d-title"></h2>
+      <p class="muted" id="ev-d-place"></p>
+      <div class="field-row">
+        <div class="field">
+          <label for="ev-guests">Հյուրերի քանակ</label>
+          <input id="ev-guests" name="guests" type="text" inputmode="numeric" maxlength="2" autocomplete="off" data-digits value="2" aria-describedby="ev-guests-error" required>
+          <p class="field-error" id="ev-guests-error"></p>
+        </div>
+        <div class="field">
+          <span class="field-label">Ընդամենը</span>
+          <p class="ev-total" id="ev-total"></p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="ev-note">Նշում (ըստ ցանկության)</label>
+        <textarea id="ev-note" name="note" rows="2" maxlength="300" placeholder="Օրինակ՝ բեմի մոտ, ծննդյան օր" aria-describedby="ev-note-error"></textarea>
+        <p class="field-error" id="ev-note-error"></p>
+      </div>
+      <p class="muted">Մուտքի գինը վճարվում է տեղում։ Ամրագրումը կարող եք չեղարկել «Ամրագրումներ» էջից մինչև միջոցառման սկիզբը։</p>
+      <p class="field-error" id="ev-form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn-pill ghost" type="button" data-close>Չեղարկել</button>
+        <button class="btn-pill primary" type="submit">Ամրագրել տեղ</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

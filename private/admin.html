@@ -16,6 +16,7 @@
   <script src="/fields.js" defer></script>
   <script src="/time-picker.js" defer></script>
   <script src="/floor-plan.js" defer></script>
+  <script src="/event-kinds.js" defer></script>
   <script src="/admin.js" defer></script>
 </head>
 <body class="page-admin">
@@ -35,6 +36,7 @@
         <button type="button" data-tab="overview" aria-current="page">📊 Ընդհանուր</button>
         <button type="button" data-tab="orders">🧾 Ամրագրումներ <span class="pill" id="pending-pill" hidden></span></button>
         <button type="button" data-tab="tables">🪑 Սեղաններ</button>
+        <button type="button" data-tab="events">🎵 Միջոցառումներ</button>
         <button type="button" data-tab="restaurants">🍽️ Ռեստորաններ</button>
         <button type="button" data-tab="settings">✏️ Կայքի տեքստեր</button>
       </nav>
@@ -123,6 +125,26 @@
           <p class="muted" id="plan-hint">Սրահի քարտեզը խմբագրելու համար վերևում ընտրեք ռեստորանը։</p>
           <p class="muted" id="plan-help" hidden>Քաշեք սեղանները մկնիկով կամ մատով։ Կարող եք նաև սեղմել սեղանի վրա և տեղաշարժել սլաքներով (Shift-ով՝ ավելի արագ)։ Հյուրերը ամրագրելիս կտեսնեն հենց այս դասավորությունը։</p>
           <div id="plan-editor" hidden></div>
+        </div>
+      </section>
+
+      <!-- Միջոցառումներ (երեկոների օրացույց) -->
+      <section class="admin-tab" id="tab-events" hidden>
+        <div class="admin-head">
+          <h1>Միջոցառումներ</h1>
+          <div class="filters">
+            <a class="btn-pill ghost" href="/events" target="_blank" rel="noopener">Դիտել էջը ↗</a>
+            <button class="btn-pill primary" type="button" id="add-event">+ Նոր միջոցառում</button>
+          </div>
+        </div>
+        <p class="muted">Կենդանի երաժշտություն, ջազ, ֆուտբոլի դիտում։ Հյուրերը տեղ են ամրագրում «Երեկոներ» էջից, և ամրագրումը միանգամից հաստատվում է, եթե տեղ կա։ Թաքցված միջոցառման հյուրերը կտեսնեն, որ այն չեղարկվել է։</p>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Միջոցառում</th><th>Օր և ժամ</th><th>Մուտք</th><th>Տեղեր</th><th>Ցուցադրել</th><th><span class="visually-hidden">Գործողություններ</span></th></tr>
+            </thead>
+            <tbody id="event-rows"></tbody>
+          </table>
         </div>
       </section>
 
@@ -230,6 +252,45 @@
         <button class="btn-pill primary" type="submit">Պահպանել</button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Միջոցառման ձև -->
+  <dialog class="admin-dialog" id="event-dialog" aria-labelledby="ed-title">
+    <form method="dialog" class="admin-form" id="event-form" novalidate>
+      <h2 id="ed-title">Նոր միջոցառում</h2>
+      <div class="field-row">
+        <div class="field"><label for="e-restaurant-in">Ռեստորան *</label><select id="e-restaurant-in" name="restaurant_id" required></select><p class="field-error" id="e-restaurant_id-error"></p></div>
+        <div class="field"><label for="e-kind-in">Տեսակ *</label><select id="e-kind-in" name="kind" required></select><p class="field-error" id="e-kind-error"></p></div>
+      </div>
+      <div class="field"><label for="e-title-in">Անուն *</label><input id="e-title-in" name="title" maxlength="80" placeholder="Օր.՝ Ջազային երեկո տերասում" required><p class="field-error" id="e-title-error"></p></div>
+      <div class="field"><label for="e-desc-in">Նկարագրություն</label><textarea id="e-desc-in" name="description" rows="2" maxlength="300" placeholder="Ով է նվագում, ինչ է սպասվում"></textarea><p class="field-error" id="e-description-error"></p></div>
+      <div class="field-row">
+        <div class="field"><label for="e-date-in">Օր *</label><input id="e-date-in" name="date" type="date" required><p class="field-error" id="e-date-error"></p></div>
+        <div class="field"><label for="e-time-in">Ժամ *</label><input id="e-time-in" name="time" type="time" value="20:00" required><p class="field-error" id="e-time-error"></p></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="e-price-in">Մուտքի գին (֏, 0՝ անվճար)</label><input id="e-price-in" name="price" type="text" inputmode="numeric" maxlength="7" autocomplete="off" data-digits value="0"><p class="field-error" id="e-price-error"></p></div>
+        <div class="field"><label for="e-capacity-in">Տեղերի քանակ *</label><input id="e-capacity-in" name="capacity" type="text" inputmode="numeric" maxlength="3" autocomplete="off" data-digits value="30" required><p class="field-error" id="e-capacity-error"></p></div>
+      </div>
+      <label class="check"><input type="checkbox" name="is_active" checked> Ցուցադրել «Երեկոներ» էջում</label>
+      <p class="field-error" id="e-form-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button class="btn-pill ghost" type="button" data-close>Չեղարկել</button>
+        <button class="btn-pill primary" type="submit">Պահպանել</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Միջոցառման հյուրերը -->
+  <dialog class="admin-dialog" id="guests-dialog" aria-labelledby="gd-title">
+    <div class="admin-form">
+      <h2 id="gd-title">Հյուրեր</h2>
+      <p class="muted" id="gd-sub"></p>
+      <ul class="guest-list" id="gd-list"></ul>
+      <div class="dialog-actions">
+        <button class="btn-pill primary" type="button" data-close>Փակել</button>
+      </div>
+    </div>
   </dialog>
 
   <!-- Սեղանի ձև -->
