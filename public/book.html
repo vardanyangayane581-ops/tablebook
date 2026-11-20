@@ -15,6 +15,7 @@
   <script src="/auth.js" defer></script>
   <script src="/fields.js" defer></script>
   <script src="/time-picker.js" defer></script>
+  <script src="/floor-plan.js" defer></script>
   <script src="/booking.js" defer></script>
 </head>
 <body class="page-book">
@@ -85,6 +86,9 @@
           </div>
           <div class="field">
             <label for="book-table">Սեղան</label>
+            <p class="plan-lead">Սեղմեք սեղանի վրա քարտեզում կամ ընտրեք ցանկից։</p>
+            <div id="book-plan" aria-label="Սրահի քարտեզ"></div>
+            <p class="time-legend plan-legend"><span class="dot free"></span> ազատ <span class="dot chosen"></span> ձեր ընտրածը <span class="dot busy"></span> այդ ժամին զբաղված <span class="dot small"></span> փոքր է</p>
             <select id="book-table" name="table_id" aria-describedby="table_id-error" required></select>
             <p class="field-error" id="table_id-error"></p>
           </div>

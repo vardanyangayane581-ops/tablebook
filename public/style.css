@@ -2439,3 +2439,149 @@ input.step-value:focus { outline: none; border-color: var(--accent); background:
 .rc-actions .btn-pill { white-space: nowrap; min-height: 42px; padding: 6px 12px; }
 .reservation .res-info { flex: 1 1 260px; }
 .res-place { font-family: "Noto Serif Armenian", Georgia, serif; font-size: 18px; }
+
+/* ---------- Սրահի քարտեզ (floor-plan.js) ---------- */
+
+/* Սրահը միշտ 4:3 է, որ դիրքերը նույնը լինեն ադմինում և ամրագրման էջում.
+   Սեղանների չափերը cqw-ով են, որ փոքր էկրանին էլ համամասնությունները պահպանվեն */
+.floor-plan { width: 100%; margin: 6px 0 4px; }
+.fp-hall {
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 calc(12.5% - 1px), var(--line) calc(12.5% - 1px) 12.5%),
+    linear-gradient(var(--warm-soft), var(--warm-soft));
+  background-blend-mode: normal;
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+}
+.fp-hall:not(.editable) { touch-action: auto; }
+.fp-windows, .fp-door {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(10px, 2.6cqw, 14px);
+  color: var(--muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.fp-windows {
+  top: 0;
+  width: 70%;
+  text-align: center;
+  padding: 1cqw 0;
+  border-bottom: 1cqw solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
+  border-radius: 0 0 10px 10px;
+}
+.fp-door {
+  bottom: 0;
+  padding: 0.6cqw 4cqw;
+  background: var(--surface);
+  border: 1px dashed var(--muted);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+}
+.fp-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 10%;
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.fp-table {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--wood);
+  border-radius: 1.6cqw;
+  box-shadow: 0 3px 8px rgba(31, 42, 38, 0.15);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s, border-color 0.15s;
+}
+.fp-table.round { width: 11cqw; height: 11cqw; border-radius: 50%; }
+.fp-table.square { width: 13cqw; height: 13cqw; }
+.fp-table.long { width: 20cqw; height: 12cqw; }
+.fp-table.longer { width: 25cqw; height: 12cqw; }
+.fp-table.banquet { width: 30cqw; height: 13cqw; }
+
+.fp-label {
+  display: grid;
+  line-height: 1.05;
+  text-align: center;
+  font-weight: 600;
+  font-size: clamp(11px, 3cqw, 17px);
+  pointer-events: none;
+}
+.fp-label small { font-weight: 400; font-size: clamp(8px, 1.9cqw, 11px); color: var(--muted); }
+
+.fp-chair {
+  position: absolute;
+  width: 3.4cqw;
+  height: 3.4cqw;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--wood);
+  border: 1px solid var(--wood-dark);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Վիճակներ */
+.fp-table.is-free:hover:not(:disabled),
+.fp-table:focus-visible { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 8px 18px rgba(42, 122, 95, 0.28); }
+.fp-table:focus-visible { outline: 3px solid var(--warm); outline-offset: 3px; }
+.fp-table.is-free { border-color: var(--accent); }
+.fp-table.is-selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 30%, transparent), 0 8px 18px rgba(42, 122, 95, 0.35);
+  z-index: 2;
+}
+.fp-table.is-selected .fp-label small { color: rgba(255, 255, 255, 0.85); }
+.fp-table.is-selected .fp-chair { background: var(--accent); border-color: var(--accent); }
+.fp-table.is-busy {
+  background: var(--danger-soft);
+  border: 2px dashed var(--error);
+  color: var(--muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.fp-table.is-busy .fp-chair, .fp-table.is-small .fp-chair { opacity: 0.4; }
+.fp-table.is-small { opacity: 0.45; cursor: not-allowed; box-shadow: none; border-style: dotted; }
+.fp-table.is-hidden { opacity: 0.5; border-style: dashed; }
+
+/* Ադմին՝ քաշելու ռեժիմ */
+.fp-hall.editable .fp-table { cursor: grab; }
+.fp-hall.editable .fp-table.dragging {
+  cursor: grabbing;
+  transition: none;
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 14px 28px rgba(31, 42, 38, 0.3);
+  z-index: 3;
+}
+
+.plan-lead { margin: 0; font-size: 14px; color: var(--muted); }
+.plan-legend { margin: 0 0 10px; }
+.time-legend .dot.chosen { margin-left: 10px; background: var(--accent); }
+.time-legend .dot.small { margin-left: 10px; border: 1.5px dotted var(--wood); opacity: 0.6; }
+.plan-admin { margin-top: 28px; }
+.plan-admin h2 { font-size: 22px; }
+.plan-admin .floor-plan { max-width: 760px; }
+.fp-empty[hidden] { display: none; }

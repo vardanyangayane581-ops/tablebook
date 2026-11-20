@@ -113,6 +113,14 @@
     function draw() {
       const busy = useTable() ? state.busy[tableSelect.value] || [] : [];
       render(opts.grid, { date: dateInput.value, busy: busy, value: wanted });
+      changed();
+    }
+
+    // opts.onUpdate(state, time)՝ սրահի քարտեզի համար. կանչվում է սեղանի, ժամի կամ օրվա փոփոխությունից հետո
+    function changed() {
+      if (!opts.onUpdate) return;
+      const checked = opts.grid.querySelector('input[name="time"]:checked');
+      opts.onUpdate(state, checked ? checked.value : "");
     }
 
     async function load() {
@@ -130,7 +138,7 @@
       draw();
     }
 
-    opts.grid.addEventListener("change", function (event) { wanted = event.target.value; });
+    opts.grid.addEventListener("change", function (event) { wanted = event.target.value; changed(); });
     dateInput.addEventListener("change", load);
     if (opts.restaurant && typeof opts.restaurant === "object") {
       opts.restaurant.addEventListener("change", function () { wantedTable = ""; load(); });

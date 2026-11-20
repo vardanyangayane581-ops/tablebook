@@ -15,6 +15,7 @@
   <script src="/regions.js" defer></script>
   <script src="/fields.js" defer></script>
   <script src="/time-picker.js" defer></script>
+  <script src="/floor-plan.js" defer></script>
   <script src="/admin.js" defer></script>
 </head>
 <body class="page-admin">
@@ -108,6 +109,20 @@
             </thead>
             <tbody id="table-rows"></tbody>
           </table>
+        </div>
+
+        <!-- Սրահի քարտեզ՝ սեղանների դասավորություն -->
+        <div class="plan-admin">
+          <div class="admin-head">
+            <h2>🗺️ Սրահի քարտեզ</h2>
+            <div class="filters" id="plan-actions" hidden>
+              <button class="btn-pill ghost" type="button" id="plan-arrange">Դասավորել ավտոմատ</button>
+              <button class="btn-pill primary" type="button" id="plan-save" disabled>Պահպանել դասավորությունը</button>
+            </div>
+          </div>
+          <p class="muted" id="plan-hint">Սրահի քարտեզը խմբագրելու համար վերևում ընտրեք ռեստորանը։</p>
+          <p class="muted" id="plan-help" hidden>Քաշեք սեղանները մկնիկով կամ մատով։ Կարող եք նաև սեղմել սեղանի վրա և տեղաշարժել սլաքներով (Shift-ով՝ ավելի արագ)։ Հյուրերը ամրագրելիս կտեսնեն հենց այս դասավորությունը։</p>
+          <div id="plan-editor" hidden></div>
         </div>
       </section>
 

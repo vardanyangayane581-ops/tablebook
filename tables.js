@@ -53,6 +53,11 @@ module.exports = function setupTables(db) {
   }
   db.exec("CREATE INDEX IF NOT EXISTS reservations_table_date ON reservations (table_id, date)");
 
+  // Սրահի քարտեզ՝ սեղանի կենտրոնի դիրքը տոկոսներով (0–100)։ NULL՝ դեռ չի դասավորվել
+  const tableColumns = db.prepare("PRAGMA table_info(cafe_tables)").all().map((c) => c.name);
+  if (!tableColumns.includes("pos_x")) db.exec("ALTER TABLE cafe_tables ADD COLUMN pos_x REAL");
+  if (!tableColumns.includes("pos_y")) db.exec("ALTER TABLE cafe_tables ADD COLUMN pos_y REAL");
+
   // Հին բազայում սեղանները ընդհանուր էին. դրանք պատկանում են առաջին ռեստորանին
   const first = db.prepare("SELECT MIN(id) AS id FROM restaurants").get().id;
   if (first) db.prepare("UPDATE cafe_tables SET restaurant_id = ? WHERE restaurant_id IS NULL").run(first);
@@ -89,6 +94,7 @@ module.exports = function setupTables(db) {
     insertTable: db.prepare("INSERT INTO cafe_tables (restaurant_id, name, seats, is_active) VALUES (?, ?, ?, ?)"),
     updateTable: db.prepare("UPDATE cafe_tables SET restaurant_id = ?, name = ?, seats = ?, is_active = ? WHERE id = ?"),
     deleteTable: db.prepare("DELETE FROM cafe_tables WHERE id = ?"),
+    moveTable: db.prepare("UPDATE cafe_tables SET pos_x = ?, pos_y = ? WHERE id = ? AND restaurant_id = ?"),
     futureOfTable: db.prepare(
       "SELECT COUNT(*) AS n FROM reservations WHERE table_id = ? AND date >= ? AND status IN ('pending', 'confirmed')"
     ),
@@ -120,7 +126,9 @@ module.exports = function setupTables(db) {
       restaurant_id: t.restaurant_id === null ? null : Number(t.restaurant_id),
       name: t.name,
       seats: Number(t.seats),
-      is_active: Number(t.is_active) === 1
+      is_active: Number(t.is_active) === 1,
+      x: t.pos_x === null || t.pos_x === undefined ? null : Number(t.pos_x),
+      y: t.pos_y === null || t.pos_y === undefined ? null : Number(t.pos_y)
     };
     if (t.restaurant_name !== undefined) {
       out.restaurant_name = t.restaurant_name || null;
@@ -245,6 +253,34 @@ module.exports = function setupTables(db) {
       if (hasErrors(errors)) return res.status(400).json({ errors });
       const result = q.insertTable.run(data.restaurant_id, data.name, data.seats, data.is_active);
       res.status(201).json({ table: publicTable(q.table.get(Number(result.lastInsertRowid))) });
+    });
+
+    // Սրահի քարտեզ՝ մեկ ռեստորանի բոլոր սեղանների դիրքերը միանգամից
+    // { restaurant_id, positions: [{ id, x, y }] }, x և y՝ 0–100 տոկոս
+    app.put("/api/admin/tables/layout", requireAdmin, (req, res) => {
+      const body = req.body || {};
+      const restaurantId = toId(body.restaurant_id);
+      if (!restaurantId || !q.restaurant.get(restaurantId)) {
+        return res.status(400).json({ errors: { form: "Ռեստորանը չի գտնվել" } });
+      }
+      const positions = Array.isArray(body.positions) ? body.positions : [];
+      const inRange = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 100;
+      for (const p of positions) {
+        if (!p || !toId(p.id) || !inRange(p.x) || !inRange(p.y)) {
+          return res.status(400).json({ errors: { form: "Սեղանի դիրքը սխալ է" } });
+        }
+      }
+      db.exec("BEGIN");
+      try {
+        for (const p of positions) {
+          q.moveTable.run(Math.round(p.x * 10) / 10, Math.round(p.y * 10) / 10, toId(p.id), restaurantId);
+        }
+        db.exec("COMMIT");
+      } catch (err) {
+        db.exec("ROLLBACK");
+        throw err;
+      }
+      res.json({ tables: q.allTables.all(restaurantId, restaurantId).map(publicTable) });
     });
 
     app.put("/api/admin/tables/:id", requireAdmin, (req, res) => {

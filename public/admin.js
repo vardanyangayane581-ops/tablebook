@@ -316,7 +316,50 @@ document.addEventListener("DOMContentLoaded", function () {
     select.value = keep;
   }
 
-  tableRestaurant.addEventListener("change", loadTables);
+  tableRestaurant.addEventListener("change", function () {
+    plan.reset();
+    loadTables();
+  });
+
+  // ---------- Սրահի քարտեզ ----------
+
+  const planSave = document.getElementById("plan-save");
+  let planTables = [];
+  const plan = window.TablebookFloorPlan.create(document.getElementById("plan-editor"), {
+    editable: true,
+    onMove: function () { planSave.disabled = false; }
+  });
+
+  function showPlan(tables) {
+    const one = Boolean(tableRestaurant.value);
+    document.getElementById("plan-hint").hidden = one;
+    document.getElementById("plan-help").hidden = !one;
+    document.getElementById("plan-editor").hidden = !one;
+    document.getElementById("plan-actions").hidden = !one;
+    planSave.disabled = true;
+    planTables = one ? tables : [];
+    if (!one) return;
+    plan.update(planTables, function (t) { return t.is_active ? "free" : "hidden"; },
+      "Այս ռեստորանը դեռ սեղաններ չունի։ Ավելացրեք դրանք «+ Նոր սեղան» կոճակով։");
+  }
+
+  document.getElementById("plan-arrange").addEventListener("click", function () {
+    plan.arrange(planTables);
+    planSave.disabled = false;
+  });
+
+  planSave.addEventListener("click", async function () {
+    planSave.disabled = true;
+    const res = await send("PUT", "/api/admin/tables/layout", {
+      restaurant_id: Number(tableRestaurant.value),
+      positions: plan.getPositions()
+    });
+    if (!res.ok) {
+      planSave.disabled = false;
+      return Cart.toast((res.data.errors && res.data.errors.form) || "Չհաջողվեց պահպանել");
+    }
+    Cart.toast("Սրահի դասավորությունը պահպանվեց 🗺️");
+  });
 
   async function loadTables() {
     if (!restaurantOptionsReady) {
@@ -327,6 +370,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const rows = document.getElementById("table-rows");
     rows.replaceChildren();
     const tables = res.data.tables || [];
+    showPlan(tables);
     if (tables.length === 0) {
       const tr = el("tr");
       const td = el("td", "muted", "Սեղաններ դեռ չկան։ Ավելացրեք առաջինը։");

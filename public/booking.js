@@ -87,13 +87,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
     restaurantSelect.addEventListener("change", showPlace);
 
+    // Սրահի քարտեզ. սեղանի վրա սեղմելը նույնն է, ինչ ցանկից ընտրելը
+    const tableSelect = form.elements.table_id;
+    const plan = window.TablebookFloorPlan.create(document.getElementById("book-plan"), {
+      onSelect: function (id) {
+        tableSelect.value = String(id);
+        tableSelect.dispatchEvent(new Event("change"));
+        const box = document.getElementById("table_id-error");
+        if (box) box.textContent = "";
+      }
+    });
+
+    // Ժամն ընտրելուց հետո քարտեզը ցույց է տալիս, թե որ սեղաններն են այդ ժամին զբաղված
+    function drawPlan(state, time) {
+      const guests = Number(form.elements.guests.value) || 1;
+      plan.update(state.tables || [], function (t) {
+        if (t.seats < guests) return "small";
+        const taken = (state.busy && state.busy[String(t.id)]) || [];
+        const busy = time && taken.some(function (x) {
+          return Math.abs(V.toMinutes(x) - V.toMinutes(time)) < V.BOOKING.tableGapMinutes;
+        });
+        if (busy) return "busy";
+        return String(t.id) === tableSelect.value ? "selected" : "free";
+      }, restaurantSelect.value ? "Այս ռեստորանը դեռ ազատ սեղաններ չունի" : "Նախ ընտրեք ռեստորանը");
+    }
+
     // Անցած ժամերը չեն ցուցադրվում, իսկ ընտրված սեղանի զբաղված ժամերը անջատված են
     const picker = window.TablebookTimePicker.connect({
       dateInput: form.elements.date,
-      tableSelect: form.elements.table_id,
+      tableSelect: tableSelect,
       grid: document.getElementById("book-time"),
       guests: form.elements.guests,
-      restaurant: restaurantSelect
+      restaurant: restaurantSelect,
+      onUpdate: drawPlan
     });
 
     fetch("/api/restaurants")
