@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (name === "overview") loadOverview();
     if (name === "orders") loadOrders();
     if (name === "tables") loadTables();
+    if (name === "events") loadEvents();
     if (name === "restaurants") loadRestaurants();
     if (name === "settings") loadSettings();
     try { sessionStorage.setItem("admin-tab", name); } catch (e) {}
@@ -445,6 +446,158 @@ document.addEventListener("DOMContentLoaded", function () {
     Cart.toast(editingTable ? "Սեղանը թարմացվեց" : "Սեղանը ավելացվեց 🎉");
     loadTables();
   });
+
+  // ---------- Միջոցառումներ ----------
+
+  const Kinds = window.TablebookEventKinds;
+  const eDialog = document.getElementById("event-dialog");
+  const eForm = document.getElementById("event-form");
+  let editingEvent = null;
+
+  for (const k of Kinds.KINDS) {
+    const o = el("option", "", k.emoji + " " + k.name);
+    o.value = k.id;
+    eForm.elements.kind.append(o);
+  }
+
+  function shortDate(iso) {
+    const d = new Date(iso + "T00:00");
+    return d.getDate() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + d.getFullYear();
+  }
+
+  async function loadEvents() {
+    const res = await api("/api/admin/events");
+    const rows = document.getElementById("event-rows");
+    rows.replaceChildren();
+    const events = res.data.events || [];
+    const today = window.TablebookValidation.localDate(new Date());
+    if (events.length === 0) {
+      const tr = el("tr");
+      const td = el("td", "muted", "Միջոցառումներ դեռ չկան։ Ավելացրեք առաջինը։");
+      td.colSpan = 6;
+      tr.append(td);
+      rows.append(tr);
+    }
+    for (const e of events) {
+      const past = e.date < today;
+      const tr = el("tr");
+      if (!e.is_active || past) tr.className = "dim";
+
+      const name = el("td");
+      name.append(el("span", "row-emoji", Kinds.kindById(e.kind).emoji), el("strong", "", e.title));
+      name.append(el("small", "row-sub", e.restaurant_name + " · " + e.restaurant_city + (past ? " · անցած" : "")));
+
+      const seats = el("td");
+      const guests = el("button", "link-btn", e.booked + " / " + e.capacity);
+      guests.type = "button";
+      guests.title = "Տեսնել հյուրերին";
+      guests.addEventListener("click", function () { openGuests(e); });
+      seats.append(guests);
+
+      const toggle = el("td");
+      const sw = el("input");
+      sw.type = "checkbox";
+      sw.className = "switch-input";
+      sw.checked = e.is_active;
+      sw.setAttribute("aria-label", "Ցուցադրել՝ " + e.title);
+      sw.addEventListener("change", async function () {
+        const upd = await send("PUT", "/api/admin/events/" + e.id, Object.assign({}, e, { is_active: sw.checked }));
+        Cart.toast(upd.ok
+          ? (sw.checked ? "Միջոցառումը ցուցադրվում է" : "Միջոցառումը թաքցվեց")
+          : ((upd.data.errors && Object.values(upd.data.errors)[0]) || "Չհաջողվեց"));
+        loadEvents();
+      });
+      toggle.append(sw);
+
+      const actions = el("td", "cell-actions");
+      const edit = el("button", "link-btn", "Խմբագրել");
+      const del = el("button", "link-btn danger", "Ջնջել");
+      edit.type = del.type = "button";
+      edit.addEventListener("click", function () { openEventDialog(e); });
+      del.addEventListener("click", async function () {
+        if (!window.confirm("Ջնջե՞լ «" + e.title + "»-ը")) return;
+        const d = await send("DELETE", "/api/admin/events/" + e.id);
+        Cart.toast(d.ok ? "Միջոցառումը ջնջվեց" : ((d.data.errors && d.data.errors.form) || "Չհաջողվեց"));
+        loadEvents();
+      });
+      actions.append(edit, del);
+
+      tr.append(
+        name,
+        el("td", "", shortDate(e.date) + ", " + e.time),
+        el("td", "", e.price > 0 ? money(e.price) : "Անվճար"),
+        seats, toggle, actions
+      );
+      rows.append(tr);
+    }
+  }
+
+  async function openEventDialog(e) {
+    editingEvent = e;
+    eForm.reset();
+    clearErrors(eForm);
+    await restaurantOptions(eForm.elements.restaurant_id, false);
+    document.getElementById("ed-title").textContent = e ? "Խմբագրել միջոցառումը" : "Նոր միջոցառում";
+    const today = window.TablebookValidation.localDate(new Date());
+    eForm.elements.date.min = e && e.date < today ? e.date : today;
+    if (e) {
+      eForm.elements.restaurant_id.value = String(e.restaurant_id);
+      eForm.elements.kind.value = e.kind;
+      eForm.elements.title.value = e.title;
+      eForm.elements.description.value = e.description;
+      eForm.elements.date.value = e.date;
+      eForm.elements.time.value = e.time;
+      eForm.elements.price.value = String(e.price);
+      eForm.elements.capacity.value = String(e.capacity);
+      eForm.elements.is_active.checked = e.is_active;
+    } else {
+      eForm.elements.date.value = window.TablebookValidation.localDate(window.TablebookValidation.addDays(new Date(), 7));
+      // Ցանկում դատարկ տարբերակ չկա, այնպես որ նախապես ընտրում ենք առաջին ռեստորանը
+      if (!eForm.elements.restaurant_id.value) eForm.elements.restaurant_id.selectedIndex = 0;
+    }
+    eDialog.showModal();
+  }
+
+  document.getElementById("add-event").addEventListener("click", function () { openEventDialog(null); });
+
+  eForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(eForm));
+    payload.price = Number(payload.price || 0);
+    payload.capacity = Number(payload.capacity);
+    payload.is_active = eForm.elements.is_active.checked;
+    const res = editingEvent
+      ? await send("PUT", "/api/admin/events/" + editingEvent.id, payload)
+      : await send("POST", "/api/admin/events", payload);
+    if (!res.ok) return showErrors(eForm, "e-", res.data.errors || { form: "Չհաջողվեց պահպանել" });
+    eDialog.close();
+    Cart.toast(editingEvent ? "Միջոցառումը թարմացվեց" : "Միջոցառումը ավելացվեց 🎶");
+    loadEvents();
+  });
+
+  // Ով է ամրագրել միջոցառումը
+  async function openGuests(e) {
+    const dialog = document.getElementById("guests-dialog");
+    document.getElementById("gd-title").textContent = Kinds.kindById(e.kind).emoji + " " + e.title;
+    document.getElementById("gd-sub").textContent =
+      shortDate(e.date) + ", " + e.time + " · ամրագրված է " + e.booked + " տեղ " + e.capacity + "-ից";
+    const list = document.getElementById("gd-list");
+    list.replaceChildren(el("li", "muted", "Բեռնվում է…"));
+    dialog.showModal();
+    const res = await api("/api/admin/events/" + e.id + "/bookings");
+    list.replaceChildren();
+    const bookings = res.data.bookings || [];
+    if (bookings.length === 0) list.append(el("li", "muted", "Դեռ ոչ ոք չի ամրագրել։"));
+    for (const b of bookings) {
+      const li = el("li", b.status === "cancelled" ? "dim" : "");
+      li.append(
+        el("strong", "", b.customer.name),
+        el("span", "", "👥 " + b.guests + " · 📞 " + b.customer.telephone + (b.status === "cancelled" ? " · չեղարկված" : ""))
+      );
+      if (b.note) li.append(el("small", "muted", b.note));
+      list.append(li);
+    }
+  }
 
   // ---------- Ռեստորաններ ----------
 

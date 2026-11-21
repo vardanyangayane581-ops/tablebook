@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Կապվեք մեզ հետ · Tablebook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600&family=Noto+Serif+Armenian:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/theme.js"></script>
+  <script src="/cart-store.js" defer></script>
+  <script src="/auth.js" defer></script>
+</head>
+<body class="page-contact">
+  <div class="container">
+    <header>
+      <a class="logo" href="/">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="20" class="f-accent"/>
+          <path d="M11 16h15v6a7.5 7.5 0 0 1-15 0z" class="f-surface"/>
+          <path d="M26 18h2a3 3 0 0 1 0 6h-2.4" fill="none" class="s-surface" stroke-width="2"/>
+          <rect x="9" y="29" width="19" height="2.4" rx="1.2" class="f-warm"/>
+        </svg>
+        Tablebook
+      </a>
+      <nav class="header-actions" aria-label="Գլխավոր մենյու">
+        <a class="nav-link" href="/restaurants">Ռեստորաններ</a>
+        <a class="nav-link" href="/events">Երեկոներ</a>
+        <a class="nav-link" href="/contact" aria-current="page">Կապ</a>
+        <a class="cart-link" href="/cart" aria-label="Զամբյուղ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>
+          <span class="cart-count" data-cart-count hidden>0</span>
+        </a>
+        <div class="auth-box" id="auth-guest">
+          <a class="nav-link" href="/login">Մուտք</a>
+          <a class="nav-link strong" href="/register">Գրանցվել</a>
+        </div>
+        <div class="auth-box" id="auth-user" hidden>
+          <span class="hello" id="hello"></span>
+          <a class="nav-link" href="/my-menus">Իմ ճաշացանկերը</a>
+          <a class="nav-link" href="/my-reservations">Ամրագրումներ</a>
+          <button class="logout-btn" id="logout-btn" type="button">Դուրս գալ</button>
+        </div>
+        <button id="theme-btn" type="button">Փոխել թեման</button>
+      </nav>
+    </header>
+
+    <main class="page-main">
+      <div class="page-intro">
+        <span class="eyebrow">💬 Մենք միշտ կապի մեջ ենք</span>
+        <h1>Կապվեք մեզ հետ</h1>
+        <p>Հարցեր ունե՞ք ամրագրման, ճաշացանկի կամ վճարման մասին։ Զանգահարեք, գրեք կամ հետևեք մեզ սոցիալական ցանցերում։</p>
+      </div>
+
+      <ul class="contact-grid">
+        <li>
+          <a class="card contact-card" id="c-phone" href="tel:+37410000000">
+            <span class="contact-icon" aria-hidden="true">📞</span>
+            <span class="contact-label">Հեռախոս</span>
+            <span class="contact-value" id="c-phone-value">+374 10 00 00 00</span>
+            <span class="contact-note">Երկ–Կիր, 10:00–22:00</span>
+          </a>
+        </li>
+        <li>
+          <a class="card contact-card" id="c-email" href="mailto:hello@tablebook.example">
+            <span class="contact-icon" aria-hidden="true">✉️</span>
+            <span class="contact-label">Էլ. փոստ</span>
+            <span class="contact-value" id="c-email-value">hello@tablebook.example</span>
+            <span class="contact-note">Պատասխանում ենք 24 ժամվա ընթացքում</span>
+          </a>
+        </li>
+        <li>
+          <a class="card contact-card" href="https://facebook.com/tablebook.example" target="_blank" rel="noopener">
+            <span class="contact-icon fb" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M14 8h3V4h-3c-2.8 0-4.5 1.8-4.5 4.6V11H7v4h2.5v9h4v-9h3l.5-4h-3.5V8.8c0-.5.3-.8.5-.8z"/></svg>
+            </span>
+            <span class="contact-label">Facebook</span>
+            <span class="contact-value">facebook.com/tablebook.example</span>
+            <span class="contact-note">Նորություններ և ակցիաներ</span>
+          </a>
+        </li>
+        <li>
+          <a class="card contact-card" href="https://instagram.com/tablebook.example" target="_blank" rel="noopener">
+            <span class="contact-icon ig" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></svg>
+            </span>
+            <span class="contact-label">Instagram</span>
+            <span class="contact-value">@tablebook.example</span>
+            <span class="contact-note">Ուտեստների և ռեստորանների լուսանկարներ</span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="muted contact-disclaimer">Էջի բոլոր կոնտակտային տվյալները օրինակային են։</p>
+    </main>
+
+    <footer>© 2026 Tablebook։ Բոլոր տվյալները օրինակային են։</footer>
+  </div>
+
+  <script>
+    // Հեռախոսն ու էլ. փոստը վերցնում ենք կայքի կարգավորումներից (ադմինը կարող է փոխել)
+    fetch("/api/site").then(function (r) { return r.json(); }).then(function (b) {
+      const s = b.settings || {};
+      if (s.contact_phone) {
+        document.getElementById("c-phone-value").textContent = s.contact_phone;
+        document.getElementById("c-phone").href = "tel:" + s.contact_phone.replace(/[^+\d]/g, "");
+      }
+      if (s.contact_email) {
+        document.getElementById("c-email-value").textContent = s.contact_email;
+        document.getElementById("c-email").href = "mailto:" + s.contact_email;
+      }
+    }).catch(function () {});
+  </script>
+</body>
+</html>
