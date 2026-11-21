@@ -2705,3 +2705,48 @@ input.step-value:focus { outline: none; border-color: var(--accent); background:
 .ev-calendar, .ev-group, .my-events { padding: 0; }
 .ev-days { scrollbar-width: thin; }
 .admin-table td .link-btn { white-space: nowrap; }
+/* «Կապվեք մեզ հետ» էջ */
+.contact-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 860px;
+}
+@media (max-width: 620px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.contact-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+.contact-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.contact-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 24px;
+}
+.contact-icon svg { width: 26px; height: 26px; }
+.contact-icon.fb { background: #1877f2; color: #fff; }
+.contact-icon.ig { background: linear-gradient(135deg, #f58529, #dd2a7b 50%, #8134af); color: #fff; }
+.contact-label { font-size: 15px; font-weight: 600; color: var(--muted); }
+.contact-value { font-size: 19px; font-weight: 600; overflow-wrap: anywhere; }
+.contact-note { font-size: 15px; color: var(--muted); }
+.contact-disclaimer { margin-top: 24px; font-size: 15px; }
+@media (prefers-reduced-motion: reduce) {
+  .contact-card, .contact-card:hover { transition: none; transform: none; }
+}
